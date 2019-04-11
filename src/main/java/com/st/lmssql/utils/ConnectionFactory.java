@@ -31,8 +31,6 @@ public class ConnectionFactory {
 		
 		Connection dbConnection = null;
 		try {
-//			Driver driver = new Driver();
-//			DriverManager.registerDriver(driver);
 			Class.forName("com.mysql.cj.jdbc.Driver"); 
 			dbConnection = DriverManager.getConnection(dbURL, user, pass);
 			dbConnection.setAutoCommit(false);
