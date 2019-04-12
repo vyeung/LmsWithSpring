@@ -18,7 +18,9 @@ public class BorrowerDaoImp implements GenericDao<Borrower> {
 	}
 	
 	@Override
-	public void add(Borrower obj) throws SQLException {
+	public boolean add(Borrower obj) throws SQLException {
+		if(has(obj.getCardNo()))
+			return false;
 		String query = "INSERT INTO tbl_borrower (name, address, phone) VALUES (?,?,?)";
 
 		PreparedStatement pstmt = con.prepareStatement(query);
@@ -26,11 +28,12 @@ public class BorrowerDaoImp implements GenericDao<Borrower> {
 		pstmt.setString(2, obj.getAddress());
 		pstmt.setString(3, obj.getPhone());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
 	public Borrower get(int objId) throws SQLException {
-		Borrower borrower = new Borrower();
+		Borrower borrower = null;
 		String query = "SELECT * FROM tbl_borrower WHERE cardNo=?";
 		
 		PreparedStatement pstmt = con.prepareStatement(query);
@@ -69,7 +72,9 @@ public class BorrowerDaoImp implements GenericDao<Borrower> {
 	}
 
 	@Override
-	public void update(Borrower obj) throws SQLException {
+	public boolean update(Borrower obj) throws SQLException {
+		if(!has(obj.getCardNo()))
+			return false;
 		String query = "UPDATE tbl_borrower " + 
 			       	   "SET name=?, address=?, phone=? " +
 			           "WHERE cardNo=?";
@@ -80,14 +85,27 @@ public class BorrowerDaoImp implements GenericDao<Borrower> {
 		pstmt.setString(3, obj.getPhone());
 		pstmt.setInt(4, obj.getCardNo());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
-	public void delete(Borrower obj) throws SQLException {
+	public boolean delete(Borrower obj) throws SQLException {
+		if(!has(obj.getCardNo()))
+			return false;
 		String query = "DELETE FROM tbl_borrower WHERE cardNo=?";
 
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setInt(1, obj.getCardNo());
 		pstmt.executeUpdate();
+		return true;
+	}
+	
+	@Override
+	public boolean has(int objId) throws SQLException {
+		String query = "SELECT * FROM tbl_borrower WHERE cardNo=?";
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, objId);
+		ResultSet rs = pstmt.executeQuery();
+		return (rs.next());
 	}
 }

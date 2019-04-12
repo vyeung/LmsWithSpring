@@ -18,7 +18,9 @@ public class PublisherDaoImp implements GenericDao<Publisher> {
 	}
 	
 	@Override
-	public void add(Publisher obj) throws SQLException {
+	public boolean add(Publisher obj) throws SQLException {
+		if(has(obj.getPublisherId()))
+			return false;
 		String query = "INSERT INTO tbl_publisher (publisherName, publisherAddress, publisherPhone) " + 
 				       "VALUES (?,?,?)";
 
@@ -27,11 +29,12 @@ public class PublisherDaoImp implements GenericDao<Publisher> {
 		pstmt.setString(2, obj.getPublisherAddress());
 		pstmt.setString(3, obj.getPublisherPhone());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
 	public Publisher get(int objId) throws SQLException {
-		Publisher publisher = new Publisher();
+		Publisher publisher = null;
 		String query = "SELECT * FROM tbl_publisher WHERE publisherId=?";
 		
 		PreparedStatement pstmt = con.prepareStatement(query);
@@ -70,7 +73,9 @@ public class PublisherDaoImp implements GenericDao<Publisher> {
 	}
 
 	@Override
-	public void update(Publisher obj) throws SQLException {
+	public boolean update(Publisher obj) throws SQLException {
+		if(!has(obj.getPublisherId()))
+			return false;
 		String query = "UPDATE tbl_publisher " + 
 			           "SET publisherName=?, publisherAddress=?, publisherPhone=? " +
 			           "WHERE publisherId=?";
@@ -81,14 +86,27 @@ public class PublisherDaoImp implements GenericDao<Publisher> {
 		pstmt.setString(3, obj.getPublisherPhone());
 		pstmt.setInt(4, obj.getPublisherId());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
-	public void delete(Publisher obj) throws SQLException {
+	public boolean delete(Publisher obj) throws SQLException {
+		if(!has(obj.getPublisherId()))
+			return false;
 		String query = "DELETE FROM tbl_publisher WHERE publisherId=?";
 
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setInt(1, obj.getPublisherId());
 		pstmt.executeUpdate();
+		return true;
+	}
+	
+	@Override
+	public boolean has(int objId) throws SQLException {
+		String query = "SELECT * FROM tbl_publisher WHERE publisherId=?";
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, objId);
+		ResultSet rs = pstmt.executeQuery();
+		return (rs.next());
 	}
 }

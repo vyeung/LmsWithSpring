@@ -17,18 +17,31 @@ public class AuthorDaoImp implements GenericDao<Author> {
 		this.con = con;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.st.lms.dao.GenericDao#add(java.lang.Object)
+	 * returns false if an object with given id# already exists
+	 */
 	@Override
-	public void add(Author obj) throws SQLException {
+	public boolean add(Author obj) throws SQLException {
+		if(has(obj.getAuthorId()))
+			return false;
 		String query = "INSERT INTO tbl_author (authorName) VALUES (?)";
 		
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setString(1, obj.getAuthorName());
 		pstmt.executeUpdate();
+		return true;
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * @see com.st.lms.dao.GenericDao#get(int)
+	 * returns null if object is not found
+	 */
 	@Override
 	public Author get(int objId) throws SQLException {
-		Author author = new Author();
+		Author author = null;
 		String query = "SELECT * FROM tbl_author WHERE authorId=?";
 		
 		PreparedStatement pstmt = con.prepareStatement(query);
@@ -44,6 +57,11 @@ public class AuthorDaoImp implements GenericDao<Author> {
 		return author;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.st.lms.dao.GenericDao#getAll()
+	 * returns empty list if nothing is in the table
+	 */
 	@Override
 	public ArrayList<Author> getAll() throws SQLException {
 		ArrayList<Author> authors = new ArrayList<>();
@@ -61,22 +79,47 @@ public class AuthorDaoImp implements GenericDao<Author> {
 		return authors;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.st.lms.dao.GenericDao#update(java.lang.Object)
+	 * returns false if the object does not exist
+	 */
 	@Override
-	public void update(Author obj) throws SQLException {
+	public boolean update(Author obj) throws SQLException {
+		if(!has(obj.getAuthorId()))
+			return false;
 		String query = "UPDATE tbl_author SET authorName=? WHERE authorId=?";
 		
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setString(1, obj.getAuthorName());
 		pstmt.setInt(2, obj.getAuthorId());
 		pstmt.executeUpdate();
+		return true;
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * @see com.st.lms.dao.GenericDao#delete(java.lang.Object)
+	 * returns false if the object does not exist
+	 */
 	@Override
-	public void delete(Author obj) throws SQLException {
+	public boolean delete(Author obj) throws SQLException {
+		if(!has(obj.getAuthorId()))
+			return false;
 		String query = "DELETE FROM tbl_author WHERE authorId=?";
 
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setInt(1, obj.getAuthorId());
 		pstmt.executeUpdate();
+		return true;
+	}
+	
+	@Override
+	public boolean has(int objId) throws SQLException {
+		String query = "SELECT * FROM tbl_author WHERE authorId=?";
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, objId);
+		ResultSet rs = pstmt.executeQuery();
+		return (rs.next());
 	}
 }

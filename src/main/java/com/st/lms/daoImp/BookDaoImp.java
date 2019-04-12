@@ -19,7 +19,9 @@ public class BookDaoImp implements GenericDao<Book> {
 	}
 	
 	@Override
-	public void add(Book obj) throws SQLException {
+	public boolean add(Book obj) throws SQLException {
+		if(has(obj.getBookId()))
+			return false;
 		String query = "INSERT INTO tbl_book (title, authId, pubId) VALUES (?,?,?)";
 
 		PreparedStatement pstmt = con.prepareStatement(query);
@@ -27,11 +29,12 @@ public class BookDaoImp implements GenericDao<Book> {
 		pstmt.setInt(2, obj.getAuthorId());
 		pstmt.setInt(3, obj.getPubId());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
 	public Book get(int objId) throws SQLException {
-		Book book = new Book();
+		Book book = null;
 		String query = "SELECT * " +
 					   "FROM tbl_book " +
 					   "WHERE bookId=?";
@@ -70,7 +73,9 @@ public class BookDaoImp implements GenericDao<Book> {
 	}
 
 	@Override
-	public void update(Book obj) throws SQLException {
+	public boolean update(Book obj) throws SQLException {
+		if(!has(obj.getBookId()))
+			return false;
 		String query = "UPDATE tbl_book " + 
 					   "SET title=?, authId=?, pubId=? " +
 			           "WHERE bookId=?";
@@ -81,14 +86,27 @@ public class BookDaoImp implements GenericDao<Book> {
 		pstmt.setInt(3, obj.getPubId());
 		pstmt.setInt(4, obj.getBookId());
 		pstmt.executeUpdate();
+		return true;
 	}
 
 	@Override
-	public void delete(Book obj) throws SQLException {
+	public boolean delete(Book obj) throws SQLException {
+		if(!has(obj.getBookId()))
+			return false;
 		String query = "DELETE FROM tbl_book WHERE bookId=?";
 	
 		PreparedStatement pstmt = con.prepareStatement(query);
 		pstmt.setInt(1, obj.getBookId());
 		pstmt.executeUpdate();	
+		return true;
+	}
+	
+	@Override
+	public boolean has(int objId) throws SQLException {
+		String query = "SELECT * FROM tbl_book WHERE bookId=?";
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, objId);
+		ResultSet rs = pstmt.executeQuery();
+		return (rs.next());
 	}
 }
