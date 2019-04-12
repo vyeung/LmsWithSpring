@@ -1,4 +1,4 @@
-package com.st.lmssql.daoImp;
+package com.st.lms.daoImp;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.st.lmssql.dao.GenericDao;
-import com.st.lmssql.models.Author;
+import com.st.lms.dao.GenericDao;
+import com.st.lms.models.Author;
 
 public class AuthorDaoImp implements GenericDao<Author> {
 	

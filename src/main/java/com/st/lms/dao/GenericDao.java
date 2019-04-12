@@ -1,4 +1,4 @@
-package com.st.lmssql.dao;
+package com.st.lms.dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

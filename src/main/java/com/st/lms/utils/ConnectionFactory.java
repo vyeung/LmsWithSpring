@@ -1,4 +1,4 @@
-package com.st.lmssql.utils;
+package com.st.lms.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class ConnectionFactory {
 	
 	public static Connection getMyConnection() {
 		try {
-			input = new FileInputStream("C:\\Users\\Henry\\eclipse-workspace\\myMavenArtifact\\src\\main\\resources\\static\\.config");
+			input = new FileInputStream("C:\\Users\\Vienhang\\eclipse-smoothstack\\ilLmsSpring\\src\\main\\resources\\static\\.config");
 			prop.load(input);
 			
 			dbURL = prop.getProperty("url");

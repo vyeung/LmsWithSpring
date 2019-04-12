@@ -1,8 +1,8 @@
-package com.st.lmssql.dto;
+package com.st.lms.dto;
 
-import com.st.lmssql.models.Author;
-import com.st.lmssql.models.Book;
-import com.st.lmssql.models.BookCopies;
+import com.st.lms.models.Author;
+import com.st.lms.models.Book;
+import com.st.lms.models.BookCopies;
 
 public class BkCopiesDTO {
 	

@@ -1,7 +1,7 @@
-package com.st.lmssql.dto;
+package com.st.lms.dto;
 
-import com.st.lmssql.models.BookLoans;
-import com.st.lmssql.models.LibraryBranch;
+import com.st.lms.models.BookLoans;
+import com.st.lms.models.LibraryBranch;
 
 public class BkLoansBranchDTO {
 	

@@ -1,22 +1,22 @@
-package com.st.lmssql.service;
+package com.st.lms.service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.st.lmssql.dao.BookCopiesDao;
-import com.st.lmssql.dao.GenericDao;
-import com.st.lmssql.daoImp.AuthorDaoImp;
-import com.st.lmssql.daoImp.BookCopiesDaoImp;
-import com.st.lmssql.daoImp.BookDaoImp;
-import com.st.lmssql.daoImp.LibBranchDaoImp;
-import com.st.lmssql.dto.BkCopiesDTO;
-import com.st.lmssql.models.Author;
-import com.st.lmssql.models.Book;
-import com.st.lmssql.models.BookCopies;
-import com.st.lmssql.models.LibraryBranch;
-import com.st.lmssql.utils.ConnectionFactory;
+import com.st.lms.dao.BookCopiesDao;
+import com.st.lms.dao.GenericDao;
+import com.st.lms.daoImp.AuthorDaoImp;
+import com.st.lms.daoImp.BookCopiesDaoImp;
+import com.st.lms.daoImp.BookDaoImp;
+import com.st.lms.daoImp.LibBranchDaoImp;
+import com.st.lms.dto.BkCopiesDTO;
+import com.st.lms.models.Author;
+import com.st.lms.models.Book;
+import com.st.lms.models.BookCopies;
+import com.st.lms.models.LibraryBranch;
+import com.st.lms.utils.ConnectionFactory;
 
 public class LibrarianService {
 	

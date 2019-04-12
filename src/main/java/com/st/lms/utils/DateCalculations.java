@@ -1,4 +1,4 @@
-package com.st.lmssql.utils;
+package com.st.lms.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

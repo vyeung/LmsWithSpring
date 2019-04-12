@@ -1,4 +1,4 @@
-package com.st.lmssql.models;
+package com.st.lms.models;
 
 import java.sql.Date;
 

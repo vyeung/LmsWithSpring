@@ -1,29 +1,32 @@
-package com.st.lmssql.service;
+package com.st.lms.service;
 
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.st.lmssql.dao.BookLoansDao;
-import com.st.lmssql.dao.GenericDao;
-import com.st.lmssql.daoImp.AuthorDaoImp;
-import com.st.lmssql.daoImp.BookDaoImp;
-import com.st.lmssql.daoImp.BookLoansDaoImp;
-import com.st.lmssql.daoImp.BorrowerDaoImp;
-import com.st.lmssql.daoImp.LibBranchDaoImp;
-import com.st.lmssql.daoImp.PublisherDaoImp;
-import com.st.lmssql.models.Author;
-import com.st.lmssql.models.Book;
-import com.st.lmssql.models.BookLoans;
-import com.st.lmssql.models.Borrower;
-import com.st.lmssql.models.LibraryBranch;
-import com.st.lmssql.models.Publisher;
-import com.st.lmssql.utils.ConnectionFactory;
+import org.springframework.stereotype.Service;
 
+import com.st.lms.dao.BookLoansDao;
+import com.st.lms.dao.GenericDao;
+import com.st.lms.daoImp.AuthorDaoImp;
+import com.st.lms.daoImp.BookDaoImp;
+import com.st.lms.daoImp.BookLoansDaoImp;
+import com.st.lms.daoImp.BorrowerDaoImp;
+import com.st.lms.daoImp.LibBranchDaoImp;
+import com.st.lms.daoImp.PublisherDaoImp;
+import com.st.lms.models.Author;
+import com.st.lms.models.Book;
+import com.st.lms.models.BookLoans;
+import com.st.lms.models.Borrower;
+import com.st.lms.models.LibraryBranch;
+import com.st.lms.models.Publisher;
+import com.st.lms.utils.ConnectionFactory;
+
+@Service
 public class AdminService {
 	
-	private Connection con = ConnectionFactory.getMyConnection();
+	Connection con = ConnectionFactory.getMyConnection();
 	
 	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
 	private GenericDao<Book> genDaoBook = new BookDaoImp(con);

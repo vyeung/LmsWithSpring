@@ -1,4 +1,4 @@
-package com.st.lmssql.daoImp;
+package com.st.lms.daoImp;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -7,8 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.st.lmssql.dao.BookLoansDao;
-import com.st.lmssql.models.BookLoans;
+import com.st.lms.dao.BookLoansDao;
+import com.st.lms.models.BookLoans;
 
 public class BookLoansDaoImp implements BookLoansDao {
 

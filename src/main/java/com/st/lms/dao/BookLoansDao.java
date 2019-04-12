@@ -1,9 +1,9 @@
-package com.st.lmssql.dao;
+package com.st.lms.dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.st.lmssql.models.BookLoans;
+import com.st.lms.models.BookLoans;
 
 public interface BookLoansDao {
 	public void add(BookLoans obj) throws SQLException;
