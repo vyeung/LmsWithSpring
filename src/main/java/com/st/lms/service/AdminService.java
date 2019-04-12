@@ -218,11 +218,11 @@ public class AdminService {
 		return false;
 	}
 	
-	public void addPublisher(String pubName, String pubAddr, String pubPhone) {
+	public void addPublisher(Publisher p) {
 		Publisher pub = new Publisher();
-		pub.setPublisherName(pubName);
-		pub.setPublisherAddress(pubAddr);
-		pub.setPublisherPhone(pubPhone);
+		pub.setPublisherName(p.getPublisherName());
+		pub.setPublisherAddress(p.getPublisherAddress());
+		pub.setPublisherPhone(p.getPublisherPhone());
 		try {
 			genDaoPublisher.add(pub);
 			con.commit();
@@ -257,8 +257,12 @@ public class AdminService {
 		return pubs;
 	}
 	
-	public void updatePublisher(int pubId, String pubName, String pubAddr, String pubPhone) {
-		Publisher pub = new Publisher(pubId, pubName, pubAddr, pubPhone);
+	public void updatePublisher(int pubId, Publisher p) {
+		Publisher pub = new Publisher();
+		pub.setPublisherId(pubId);
+		pub.setPublisherName(p.getPublisherName());
+		pub.setPublisherAddress(p.getPublisherAddress());
+		pub.setPublisherPhone(p.getPublisherPhone());
 		try {
 			genDaoPublisher.update(pub);
 			con.commit();
