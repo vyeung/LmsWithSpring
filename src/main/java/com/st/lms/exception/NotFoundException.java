@@ -7,4 +7,8 @@ public class NotFoundException extends Exception {
 	public NotFoundException(String message) {
 		super(message);
 	}
+	
+	public NotFoundException(String action, String tableName, int objId) {
+		super(action + " failed. The " + tableName + " with id=" + objId + " not found");
+	}
 }
