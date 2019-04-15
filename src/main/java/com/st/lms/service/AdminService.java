@@ -3,6 +3,7 @@ package com.st.lms.service;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import com.st.lms.daoImp.BookLoansDaoImp;
 import com.st.lms.daoImp.BorrowerDaoImp;
 import com.st.lms.daoImp.LibBranchDaoImp;
 import com.st.lms.daoImp.PublisherDaoImp;
+import com.st.lms.dto.BkAuthPubDTO;
 import com.st.lms.models.Author;
 import com.st.lms.models.Book;
 import com.st.lms.models.BookLoans;
@@ -93,10 +95,65 @@ public class AdminService {
 		return books;
 	}
 	
-	public void updateBook(int bookId, String title, int authId, int pubId) {
-		Book b = new Book(bookId, title, authId, pubId);
+	public BkAuthPubDTO getBookWithAuthAndPub(int bookId) {
+		BkAuthPubDTO obj = null;
 		try {
-			genDaoBook.update(b);
+			List<Book> books = genDaoBook.getAll();
+			Author author;
+			Publisher publisher;
+			
+			for(Book b : books) {
+				if(b.getBookId() == bookId) {
+					author = genDaoAuthor.get(b.getAuthorId());
+					publisher = genDaoPublisher.get(b.getPubId());
+					
+					obj = new BkAuthPubDTO(bookId, b.getTitle(), 
+									       author.getAuthorName(), publisher.getPublisherName());
+				}
+			}
+		}
+		catch(SQLException e) {
+			System.err.println("Unable to load book with author and publisher!");
+		}
+		
+		return obj;
+	}
+	
+	public List<BkAuthPubDTO> getBooksWithAuthAndPub() {
+		List<BkAuthPubDTO> list = null;
+		
+		try {
+			List<Book> books = genDaoBook.getAll();
+			Author author;
+			Publisher publisher;
+			
+			BkAuthPubDTO obj;
+			list = new ArrayList<>();
+			
+			for(Book b : books) {
+				author = genDaoAuthor.get(b.getAuthorId());
+				publisher = genDaoPublisher.get(b.getPubId());
+				
+				obj = new BkAuthPubDTO(b.getBookId(), b.getTitle(), 
+									   author.getAuthorName(), publisher.getPublisherName());
+				list.add(obj);
+			}
+		}
+		catch(SQLException e) {
+			System.err.println("Unable to load books with author and publisher!");
+		}
+		
+		return list;
+	}
+	
+	public void updateBook(int bookId, Book b) {
+		Book book = new Book();
+		book.setBookId(bookId);
+		book.setTitle(b.getTitle());
+		book.setAuthorId(b.getAuthorId());
+		book.setPubId(b.getPubId());
+		try {
+			genDaoBook.update(book);
 			con.commit();
 			System.out.println("Update Book Success!");
 		} catch (SQLException e) {
