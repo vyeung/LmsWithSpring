@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.st.lms.dao.BookCopiesDao;
 import com.st.lms.dao.GenericDao;
 import com.st.lms.daoImp.AuthorDaoImp;
@@ -18,6 +20,7 @@ import com.st.lms.models.BookCopies;
 import com.st.lms.models.LibraryBranch;
 import com.st.lms.utils.ConnectionFactory;
 
+@Service
 public class LibrarianService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
@@ -34,10 +37,17 @@ public class LibrarianService {
 			libBranches = genDaoLibBranch.getAll();
 			con.commit();
 		} catch (SQLException e) {
-			System.out.println("Unable to load library branches!");
 			myRollBack();
 		}
 		return libBranches;
+	}
+	
+	public LibraryBranch getLibraryBranch(int branchId) {
+		try {
+			return genDaoLibBranch.get(branchId);
+		} catch(SQLException e) {
+			return null;
+		}
 	}
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
@@ -45,9 +55,7 @@ public class LibrarianService {
 		try {
 			genDaoLibBranch.update(libBranch);
 			con.commit();
-			System.out.println("Update Branch Success!");
 		} catch (SQLException e) {
-			System.out.println("Unable to update branch information!");
 			myRollBack();
 		}
 	}
