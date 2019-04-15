@@ -1,7 +1,7 @@
 package com.st.lms.controller;
 
+import java.sql.Date;
 import java.util.List;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,8 +14,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.st.lms.models.*;
+import com.st.lms.dto.BkAuthPubDTO;
+import com.st.lms.exception.AlreadyExistsException;
+import com.st.lms.exception.BadRequestException;
+import com.st.lms.exception.NotFoundException;
+import com.st.lms.models.Author;
+import com.st.lms.models.Book;
+import com.st.lms.models.BookLoans;
+import com.st.lms.models.Publisher;
 import com.st.lms.service.AdminService;
+import com.st.lms.utils.DateCalculations;
 
 @RestController
 public class AdminController {
@@ -29,24 +37,222 @@ public class AdminController {
 	}
 	
 	@GetMapping("/publisher/{id}")
-	public Publisher getPublisher(@PathVariable int id) {
-		return adminService.getPublisher(id);
+	public ResponseEntity<Publisher> getPublisher(@PathVariable int id) throws NotFoundException {
+		Publisher publisher = adminService.getPublisher(id);
+		if(publisher == null) {
+			throw new NotFoundException("Publisher with id=" + id + " not found");
+		}
+		
+		return new ResponseEntity<>(publisher, HttpStatus.OK);
 	}
 	
 	@PostMapping("/publisher")
-	public void addPublisher(@RequestBody Publisher pub) {
+	public ResponseEntity<Publisher> addPublisher(@RequestBody Publisher pub) throws AlreadyExistsException {
+		List<Publisher> pubs = adminService.getAllPublishers();
+		for(Publisher p : pubs) {
+			if(p.getPublisherName().equals(pub.getPublisherName())) {
+				throw new AlreadyExistsException("Publisher " + pub.getPublisherName() + " already exists in the database");
+			}
+		}
+		
+		//ok if code gets here
 		adminService.addPublisher(pub);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/publisher/{id}")
-	public void updatePublisher(@PathVariable int id, @RequestBody Publisher pub) {
+	public ResponseEntity<Publisher> updatePublisher(@PathVariable int id, @RequestBody Publisher pub) 
+	throws NotFoundException {
+		
+		Publisher publisher = adminService.getPublisher(id);
+		if(publisher == null) {
+			throw new NotFoundException("Update failed. Publisher with id=" + id + " not found");
+		}
+		
 		adminService.updatePublisher(id, pub);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@DeleteMapping("/publisher/{id}")
-	public void deletePublisher(@PathVariable int id) {
+	public ResponseEntity<Publisher> deletePublisher(@PathVariable int id) throws NotFoundException {
+		Publisher publisher = adminService.getPublisher(id);
+		if(publisher == null) {
+			throw new NotFoundException("Delete failed. Publisher with id=" + id + " not found");
+		}
+		
 		adminService.deletePublisher(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
+	/*###################################################################################*/
+	
+	@GetMapping("/books")
+	public List<BkAuthPubDTO> getAllBooks() {
+		return adminService.getBooksWithAuthAndPub();
+	}
+	
+	@GetMapping("/book/{id}")
+	public ResponseEntity<BkAuthPubDTO> getBook(@PathVariable int id) throws NotFoundException {
+		BkAuthPubDTO bookWithAuthPub = adminService.getBookWithAuthAndPub(id);
+		if(bookWithAuthPub == null) {
+			throw new NotFoundException("Book with id=" + id + " not found");
+		}
+		
+		return new ResponseEntity<>(bookWithAuthPub, HttpStatus.OK);
+	}
+	
+	@PostMapping("/book")
+	public ResponseEntity<BkAuthPubDTO> addBook(@RequestBody BkAuthPubDTO bookBody) 
+	throws AlreadyExistsException, BadRequestException {
+		
+		List<Book> books = adminService.getAllBooks();
+		List<Author> authors = adminService.getAllAuthors();
+		List<Publisher> pubs = adminService.getAllPublishers();
+		int titleExists = 0, authorExists = 0, publisherExists = 0;
+		
+		//check if title, author, and publisher names exist in DB
+		for(Book b : books) {
+			if(b.getTitle().equals(bookBody.getBookTitle()))
+				titleExists = 1;
+		}
+		for(Author a : authors) {
+			if(a.getAuthorName().equals(bookBody.getAuthorName()))
+				authorExists = 1;
+		}
+		for(Publisher p : pubs) {
+			if(p.getPublisherName().equals(bookBody.getPublisherName()))
+				publisherExists = 1;
+		}
+		
+		//throw exceptions depending on flag values
+		if(titleExists==1 && authorExists==1) {
+			throw new AlreadyExistsException(bookBody.getBookTitle() + " by " + bookBody.getAuthorName() + " already exists in the database");
+		}
+		else if(titleExists==0 && authorExists==0) {
+			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
+		}
+		else if(titleExists==1 && authorExists==0) {
+			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
+		}
+		else if(titleExists==0 && publisherExists==0) {
+			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
+		}
+		else if(titleExists==1 && publisherExists==0) {
+			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
+		}
+		
+		//no exceptions if code gets here.
+		//titleExists=0, authorExists=1, publisherExists=1 is the only safe combination to add a book.
+		//find corresponding author and publisher ids.
+		int authId = 0, pubId = 0;
+		for(Author a : authors) {
+			if(bookBody.getAuthorName().equals(a.getAuthorName()))
+				authId = a.getAuthorId();
+		}
+		for(Publisher p : pubs) {
+			if(bookBody.getPublisherName().equals(p.getPublisherName()))
+				pubId = p.getPublisherId();
+		}
+		
+		adminService.addBook(bookBody.getBookTitle(), authId, pubId);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+	
+	@PutMapping("/book/{id}")
+	public ResponseEntity<BkAuthPubDTO> updateBook(@PathVariable int id, @RequestBody BkAuthPubDTO bookBody) 
+	throws NotFoundException, BadRequestException {
+		
+		Book myBook = adminService.getBook(id);
+		if(myBook == null) {
+			throw new NotFoundException("Update failed. Book with id=" + id + " not found");
+		}
+		
+		List<Author> authors = adminService.getAllAuthors();
+		List<Publisher> pubs = adminService.getAllPublishers();
+		int authorExists = 0, publisherExists = 0;
+
+		//check if author or publisher name exists in DB
+		for(Author a : authors) {
+			if(a.getAuthorName().equals(bookBody.getAuthorName()))
+				authorExists = 1;
+		}
+		for(Publisher p : pubs) {
+			if(p.getPublisherName().equals(bookBody.getPublisherName()))
+				publisherExists = 1;
+		}
+		
+		//throw exceptions depending on flag values
+		if(authorExists == 0) {
+			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
+		}
+		else if(publisherExists == 0) {
+			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
+		}
+		
+		//find corresponding author and publisher ids
+		int authId = 0, pubId = 0;
+		for(Author a : authors) {
+			if(bookBody.getAuthorName().equals(a.getAuthorName()))
+				authId = a.getAuthorId();
+		}
+		for(Publisher p : pubs) {
+			if(bookBody.getPublisherName().equals(p.getPublisherName()))
+				pubId = p.getPublisherId();
+		}
+		
+		Book updates = new Book();
+		updates.setTitle(bookBody.getBookTitle());
+		updates.setAuthorId(authId);
+		updates.setPubId(pubId);
+		adminService.updateBook(id, updates);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@DeleteMapping("/book/{id}")
+	public ResponseEntity<BkAuthPubDTO> deleteBook(@PathVariable int id) throws NotFoundException {
+		Book b = adminService.getBook(id);
+		if(b == null) {
+			throw new NotFoundException("Delete failed. Book with id=" + id + " not found");
+		}
+		
+		adminService.deleteBook(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	/*###################################################################################*/
+	
+	@GetMapping("/bookLoans")
+	public List<BookLoans> getAllBookLoans() {
+		return adminService.getAllBookLoans();
+	}
+	
+	@PutMapping("/bookLoans/bookId/{bookId}/branchId/{branchId}/cardNo/{cardNo}")
+	public ResponseEntity<BookLoans> updateBookLoanDueDate(@PathVariable int bookId, @PathVariable int branchId, @PathVariable int cardNo, @RequestBody BookLoans newDueDate) 
+	throws NotFoundException {
+
+		List<BookLoans> bookLoans = adminService.getAllBookLoans();
+		Date dateOut = null;
+		int found = 0;
+
+		//check if all 3 ids are a row in BookLoans
+		for(BookLoans bl : bookLoans) {
+			if(bl.getBookId()==bookId && bl.getBranchId()==branchId && bl.getCardNo()==cardNo) {
+				found = 1;
+				dateOut = bl.getDateOut();
+				break;
+			}
+		}
+		
+		if(found == 0) 
+			throw new NotFoundException("BookLoan with bookId=" + bookId + ", branchId=" + branchId + ", cardNo=" + cardNo + " not found");
+
+		//ok
+		Date dueDate = (Date) DateCalculations.addOneDay(newDueDate.getDueDate());  //fixes off by one anomaly
+		adminService.changeDueDate(bookId, branchId, cardNo, dateOut, dueDate);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	/*###################################################################################*/
 	
 	//TODO: Author
 	@GetMapping(path="/author/{authorId}", produces= {"application/json"})
