@@ -46,6 +46,17 @@ public class DateCalculations {
 		return sqlDate;
 	}
 	
+	public static Date addOneDay(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DATE, 1);
+		
+		Date currentTimePlus7 = cal.getTime();  //calendar to utilDate
+		java.sql.Date sqlDate = new java.sql.Date(currentTimePlus7.getTime()); //to sqlDate
+		
+		return sqlDate;
+	}
+	
 	public static Date convertStringtoDate(String strDate) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Date utilDate = null;
