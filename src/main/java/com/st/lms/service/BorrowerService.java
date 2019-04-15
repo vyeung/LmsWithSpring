@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.st.lms.dao.BookCopiesDao;
 import com.st.lms.dao.BookLoansDao;
 import com.st.lms.dao.GenericDao;
@@ -26,7 +28,9 @@ import com.st.lms.models.BookLoans;
 import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
 import com.st.lms.utils.ConnectionFactory;
+import com.st.lms.utils.DateCalculations;
 
+@Service
 public class BorrowerService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
@@ -70,6 +74,15 @@ public class BorrowerService {
 		return libBranches;
 	}
 	
+	//to be implemented after hibernate
+	public boolean branchExists(int branchId) {
+		return false;
+	}
+	
+	//to be implemented after hibernate
+	public boolean loanExists(int cardNo, int branchId, int bookId) {
+		return false;
+	}
 	//returns all bookCopies>=1 specific to a branch with book and author
 	public List<BkCopiesDTO> getBkCopiesGreater1BookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
@@ -101,9 +114,12 @@ public class BorrowerService {
 		return list;
 	}
 	
-	public void checkOutBook(int bookId, int branchId, int cardNo, Date dateOut, Date dueDate, int noOfCopies) {
+	public void checkOutBook(int bookId, int branchId, int cardNo, int noOfCopies) {
+		Date dateOut, dueDate;
+		dateOut = (Date) DateCalculations.getCurrentTime();
+		dueDate = (Date) DateCalculations.getTodayPlus7();
 		BookLoans bl = new BookLoans(bookId, branchId, cardNo, dateOut, dueDate);
-		BookCopies bc = new BookCopies(bookId, branchId, noOfCopies);
+		BookCopies bc = new BookCopies(bookId, branchId, noOfCopies-1);
 		try {
 			bookLoansDao.add(bl);      //add an entry to book_loans
 			bookCopiesDao.update(bc);  //update noOfCopies with 1 less of that book
@@ -201,7 +217,7 @@ public class BorrowerService {
 		BookCopies bc = new BookCopies();
 		bc.setBookId(bookId);
 		bc.setBranchId(branchId);
-		bc.setNoOfCopies(noOfCopies);
+		bc.setNoOfCopies(noOfCopies+1);
 		
 		try {
 			bookLoansDao.delete(bl);  //delete entry in book loans
