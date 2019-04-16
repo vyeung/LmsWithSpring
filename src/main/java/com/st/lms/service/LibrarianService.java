@@ -1,7 +1,5 @@
 package com.st.lms.service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +15,9 @@ import com.st.lms.models.Author;
 import com.st.lms.models.Book;
 import com.st.lms.models.BookCopies;
 import com.st.lms.models.LibraryBranch;
-import com.st.lms.utils.ConnectionFactory;
 
 @Service
 public class LibrarianService {
-	
-	private Connection con = ConnectionFactory.getMyConnection();
 	
 	@Autowired
 	private LibBranchDao libBranchDao;
@@ -33,15 +28,9 @@ public class LibrarianService {
 	@Autowired
 	private BookCopiesDao bookCopiesDao;
 	
-	
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
-		try {
-			libBranches = libBranchDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			myRollBack();
-		}
+		libBranches = libBranchDao.findAll();
 		return libBranches;
 	}
 	
@@ -51,42 +40,29 @@ public class LibrarianService {
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
 		LibraryBranch libBranch = new LibraryBranch(branchId, branchName, branchAddr);
-		try {
-			libBranchDao.save(libBranch);
-			con.commit();
-		} catch (SQLException e) {
-			myRollBack();
-		}
+		libBranchDao.save(libBranch);
 	}
 	
 	//returns all bookCopies specific to a branch with book and author
 	public List<BkCopiesDTO> getBookCopiesBookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
-		try {
-			List<BookCopies> bookCopies = bookCopiesDao.findAll();
-			Book book;
-			Author author;
-			
-			BkCopiesDTO obj;
-			list= new ArrayList<>();
-			
-			for(BookCopies bc : bookCopies) {
-				if(bc.getBranchId() == branchId) {
-					//kind of like doing joins
-					book = bookDao.findById(bc.getBookId()).get();
-					author = authorDao.findById(book.getAuthorId()).get();
-					
-					obj = new BkCopiesDTO(bc, book, author);
-					list.add(obj);
-				}
-			}
-			con.commit();
-		} 
-		catch(SQLException e) {
-			System.out.println("Unable to load the book copies of your branch!");
-			myRollBack();
-		}
+		List<BookCopies> bookCopies = bookCopiesDao.findAll();
+		Book book;
+		Author author;
 		
+		BkCopiesDTO obj;
+		list= new ArrayList<>();
+		
+		for(BookCopies bc : bookCopies) {
+			if(bc.getBranchId() == branchId) {
+				//kind of like doing joins
+				book = bookDao.findById(bc.getBookId()).get();
+				author = authorDao.findById(book.getAuthorId()).get();
+				
+				obj = new BkCopiesDTO(bc, book, author);
+				list.add(obj);
+			}
+		}
 		return list;
 	}
 	
@@ -94,14 +70,5 @@ public class LibrarianService {
 		BookCopies bc = new BookCopies(bookId, branchId, numCopies);
 		bookCopiesDao.saveAndFlush(bc);
 		System.out.println("Update Book Copies Success!");
-	}
-	
-	private void myRollBack() {
-		try {
-			con.rollback();
-			System.out.println("Rolling Back...");
-		} catch (SQLException e) {
-			System.out.println("Unable to Roll Back!");
-		}
 	}
 }

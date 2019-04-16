@@ -1,8 +1,6 @@
 package com.st.lms.service;
 
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +21,9 @@ import com.st.lms.models.BookLoans;
 import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
 import com.st.lms.models.Publisher;
-import com.st.lms.utils.ConnectionFactory;
 
 @Service
 public class AdminService {
-	
-	Connection con = ConnectionFactory.getMyConnection();
-	
 	
 	@Autowired
 	private BookDao bookDao;
@@ -44,8 +38,6 @@ public class AdminService {
 	@Autowired
 	private LibBranchDao libraryBranchDao;
 
-
-	
 	public boolean bookTitleExists(String bookTitle) {
 		List<Book> books = null;
 		books = bookDao.findAll();
@@ -150,13 +142,7 @@ public class AdminService {
 	
 	public boolean authNameExists(String authName) {
 		List<Author> authors = null;
-		try {
-			authors = authorDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Failure in authNameExists()");
-			myRollBack();
-		}
+		authors = authorDao.findAll();
 		
 		for(Author a : authors) {
 			if(a.getAuthorName().equals(authName))
@@ -256,13 +242,7 @@ public class AdminService {
 	
 	public boolean branchNameExists(String branchName) {
 		List<LibraryBranch> libBranch = null;
-		try {
-			libBranch = libraryBranchDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Failure in branchNameExists()");
-			myRollBack();
-		}
+		libBranch = libraryBranchDao.findAll();
 		
 		for(LibraryBranch lb : libBranch) {
 			if(lb.getBranchName().equals(branchName))
@@ -273,13 +253,7 @@ public class AdminService {
 	
 	public boolean branchInfoExists(String branchName, String branchAddr) {
 		List<LibraryBranch> libBranches = null;
-		try {
-			libBranches = libraryBranchDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Failure in branchInfoExists");
-			myRollBack();
-		}
+		libBranches = libraryBranchDao.findAll();
 		
 		for(LibraryBranch lb : libBranches) {
 			if(lb.getBranchName().equals(branchName) && lb.getBranchAddress().equals(branchAddr))
@@ -325,13 +299,7 @@ public class AdminService {
 	
 	public boolean borrowerNameExists(String borrowerName) {
 		List<Borrower> borrs = null;
-		try {
-			borrs = borrowerDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Failure in borrowerNameExists()");
-			myRollBack();
-		}
+		borrs = borrowerDao.findAll();
 		
 		for(Borrower borr : borrs) {
 			if(borr.getName().equals(borrowerName))
@@ -385,16 +353,5 @@ public class AdminService {
 		BookLoans bl = new BookLoans(bookId, branchId, cardNo, dateOut, dueDate);
 		bookLoansDao.saveAndFlush(bl);;
 		System.out.println("Update BookLoan Success!");
-	}
-	
-	/*#########################################################################*/
-	
-	private void myRollBack() {
-		try {
-			con.rollback();
-			System.out.println("Rolling Back...");
-		} catch (SQLException e) {
-			System.out.println("Unable to Roll Back!");
-		}
 	}
 }

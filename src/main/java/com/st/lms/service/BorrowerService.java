@@ -1,8 +1,6 @@
 package com.st.lms.service;
 
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,13 +26,10 @@ import com.st.lms.models.BookLoans;
 import com.st.lms.models.BookLoansPrimaryKey;
 import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
-import com.st.lms.utils.ConnectionFactory;
 import com.st.lms.utils.DateCalculations;
 
 @Service
 public class BorrowerService {
-	
-	private Connection con = ConnectionFactory.getMyConnection();
 	
 	@Autowired
 	private BookDao bookDao;
@@ -49,17 +44,10 @@ public class BorrowerService {
 	@Autowired
 	private AuthorDao authorDao;
 	
-	
 	public boolean borCardNoExists(int cardNo) {
 		boolean flag;
 		Borrower bor = null;
-		try {
-			bor = borrowerDao.findById(cardNo).get();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Problem with checking card number!");
-			myRollBack();
-		}
+		bor = borrowerDao.findById(cardNo).get();
 		
 		if(bor.getName() == null) 
 			flag = false;
@@ -71,13 +59,7 @@ public class BorrowerService {
 	
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
-		try {
-			libBranches = libBranchDao.findAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Branches Failed! :(");
-			myRollBack();
-		}
+		libBranches = libBranchDao.findAll();
 		return libBranches;
 	}
 	
@@ -93,31 +75,23 @@ public class BorrowerService {
 	//returns all bookCopies>=1 specific to a branch with book and author
 	public List<BkCopiesDTO> getBkCopiesGreater1BookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
-		try {
-			List<BookCopies> bookCopies = bookCopiesDao.findAll();
-			Book book;
-			Author author;
-			
-			BkCopiesDTO obj;
-			list= new ArrayList<>();
-			
-			for(BookCopies bc : bookCopies) {			
-				if(bc.getBranchId()==branchId && bc.getNoOfCopies()>=1) {
-					//kind of like doing joins
-					book = bookDao.findById(bc.getBookId()).get();
-					author = authorDao.findById(book.getAuthorId()).get();
-					
-					obj = new BkCopiesDTO(bc, book, author);
-					list.add(obj);
-				}
-			}
-			con.commit();
-		} 
-		catch(SQLException e) {
-			System.err.println("Unable to load books from the branch!");
-			myRollBack();
-		}
+		List<BookCopies> bookCopies = bookCopiesDao.findAll();
+		Book book;
+		Author author;
 		
+		BkCopiesDTO obj;
+		list= new ArrayList<>();
+		
+		for(BookCopies bc : bookCopies) {			
+			if(bc.getBranchId()==branchId && bc.getNoOfCopies()>=1) {
+				//kind of like doing joins
+				book = bookDao.findById(bc.getBookId()).get();
+				author = authorDao.findById(book.getAuthorId()).get();
+				
+				obj = new BkCopiesDTO(bc, book, author);
+				list.add(obj);
+			}
+		}	
 		return list;
 	}
 	
@@ -128,79 +102,54 @@ public class BorrowerService {
 		dueDate = (Date) DateCalculations.getTodayPlus7();
 		BookLoans bl = new BookLoans(bookId, branchId, cardNo, dateOut, dueDate);
 		BookCopies bc = new BookCopies(bookId, branchId, noOfCopies-1);
-		try {
-			bookLoansDao.save(bl);           //add an entry to book_loans
-			bookCopiesDao.saveAndFlush(bc);  //update noOfCopies with 1 less of that book
-			con.commit();
-			System.out.println("Book Checked Out!");
-		} catch (SQLException e) {
-			System.out.println("Unable to check out book!");
-			myRollBack();
-		}
+		bookLoansDao.save(bl);           //add an entry to book_loans
+		bookCopiesDao.saveAndFlush(bc);  //update noOfCopies with 1 less of that book
 	}
-	
 	/*##############################################################*/
 	
 	//returns the branches that user has a book checked out from based on their cardNo
 	public List<BkLoansBranchDTO> getBranchesWithBkLoans(int cardNo) {
 		List<BkLoansBranchDTO> list = null;
-		try {
-			List<BookLoans> bookLoans = bookLoansDao.findAll();
-			LibraryBranch libBranch;
+		List<BookLoans> bookLoans = bookLoansDao.findAll();
+		LibraryBranch libBranch;
+		
+		BkLoansBranchDTO obj;
+		list = new ArrayList<>();
+		
+		for(BookLoans bl : bookLoans) {
+			libBranch = libBranchDao.findById(bl.getBranchId()).get();
 			
-			BkLoansBranchDTO obj;
-			list = new ArrayList<>();
-			
-			for(BookLoans bl : bookLoans) {
-				libBranch = libBranchDao.findById(bl.getBranchId()).get();
-				
-				if(bl.getCardNo()==cardNo && bl.getDateOut()!=null && bl.getDueDate()!=null) {
-					obj = new BkLoansBranchDTO(bl, libBranch);
-					list.add(obj);
-				}
+			if(bl.getCardNo()==cardNo && bl.getDateOut()!=null && bl.getDueDate()!=null) {
+				obj = new BkLoansBranchDTO(bl, libBranch);
+				list.add(obj);
 			}
-			
-			//remove duplicates based on branch name
-			HashSet<String> seen = new HashSet<>();
-			list.removeIf(e -> !seen.add(e.getLibBranch().getBranchName()));
-			
-			con.commit();
-		} 
-		catch(SQLException e) {
-			System.err.println("Unable to load branches that you want to return a book to!");
-			myRollBack();
 		}
 		
+		//remove duplicates based on branch name
+		HashSet<String> seen = new HashSet<>();
+		list.removeIf(e -> !seen.add(e.getLibBranch().getBranchName()));
 		return list;
 	}
 	
 	//returns the books that user has checked out within a specific branch  
 	public List<BkLoansBkAuthDTO> getBooksFromBranch(int cardNo, int branchId) {
 		List<BkLoansBkAuthDTO> list = null;
-		try {
-			List<BookLoans> bookLoans = bookLoansDao.findAll();
-			Book book;
-			Author author;
-			
-			BkLoansBkAuthDTO obj;
-			list = new ArrayList<>();
-			
-			for(BookLoans bl : bookLoans) {
-				if(bl.getCardNo()==cardNo && bl.getBranchId()==branchId) {
-					book = bookDao.findById(bl.getBookId()).get();
-					author = authorDao.findById(book.getAuthorId()).get();
-
-					obj = new BkLoansBkAuthDTO(bl, book, author);
-					list.add(obj);
-				}
-			}
-			con.commit();
-		} 
-		catch(SQLException e) {
-			System.err.println("Unable to load the books you want to return!");
-			myRollBack();
-		}
+		List<BookLoans> bookLoans = bookLoansDao.findAll();
+		Book book;
+		Author author;
 		
+		BkLoansBkAuthDTO obj;
+		list = new ArrayList<>();
+		
+		for(BookLoans bl : bookLoans) {
+			if(bl.getCardNo()==cardNo && bl.getBranchId()==branchId) {
+				book = bookDao.findById(bl.getBookId()).get();
+				author = authorDao.findById(book.getAuthorId()).get();
+
+				obj = new BkLoansBkAuthDTO(bl, book, author);
+				list.add(obj);
+			}
+		}
 		return list;
 	}
 	
@@ -226,23 +175,7 @@ public class BorrowerService {
 		bc.setBranchId(branchId);
 		bc.setNoOfCopies(noOfCopies+1);
 		
-		try {
-			bookLoansDao.delete(bl);        //delete entry in book loans
-			bookCopiesDao.saveAndFlush(bc); //update noOfCopies with 1 more of that book
-			con.commit();
-			System.out.println("Book Returned!");
-		} catch (SQLException e) {
-			System.out.println("Unable to return book!");
-			myRollBack();
-		}
-	}
-	
-	private void myRollBack() {
-		try {
-			con.rollback();
-			System.out.println("Rolling Back...");
-		} catch (SQLException e) {
-			System.out.println("Unable to Roll Back!");
-		}
+		bookLoansDao.delete(bl);        //delete entry in book loans
+		bookCopiesDao.saveAndFlush(bc); //update noOfCopies with 1 more of that book
 	}
 }
