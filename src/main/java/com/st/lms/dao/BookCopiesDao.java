@@ -1,14 +1,12 @@
-package com.st.lms.dao;
+package com.st.lms.daoImp;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.st.lms.models.BookCopies;
+import com.st.lms.models.BookCopiesPrimaryKey;
 
-public interface BookCopiesDao {
-	public void add(BookCopies obj) throws SQLException;
-	public int getNoOfCopies(int bookId, int branchId) throws SQLException;
-	public ArrayList<BookCopies> getAll() throws SQLException;
-	public void update(BookCopies obj) throws SQLException;
-	public void delete(BookCopies obj) throws SQLException;
+@Repository
+public interface BookCopiesDaoImp extends JpaRepository<BookCopies, BookCopiesPrimaryKey> {
+	
 }
