@@ -25,6 +25,7 @@ import com.st.lms.models.Book;
 import com.st.lms.models.BookCopies;
 import com.st.lms.models.BookCopiesPrimaryKey;
 import com.st.lms.models.BookLoans;
+import com.st.lms.models.BookLoansPrimaryKey;
 import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
 import com.st.lms.utils.ConnectionFactory;
@@ -82,12 +83,12 @@ public class BorrowerService {
 	
 	//to be implemented after hibernate
 	public boolean branchExists(int branchId) {
-		return false;
+		return libBranchDao.findById(branchId).isPresent();
 	}
 	
 	//to be implemented after hibernate
 	public boolean loanExists(int cardNo, int branchId, int bookId) {
-		return false;
+		return bookLoansDao.findById(new BookLoansPrimaryKey(bookId, branchId, cardNo)).isPresent();
 	}
 	//returns all bookCopies>=1 specific to a branch with book and author
 	public List<BkCopiesDTO> getBkCopiesGreater1BookAndTitle(int branchId) {
