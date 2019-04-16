@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.st.lms.dao.BookCopiesDao;
 import com.st.lms.dao.GenericDao;
 import com.st.lms.daoImp.AuthorDaoImp;
 import com.st.lms.daoImp.BookCopiesDaoImp;
@@ -28,10 +27,12 @@ public class LibrarianService {
 	
 	@Autowired
 	private LibBranchDaoImp genDaoLibBranch;
-	private GenericDao<Book> genDaoBook = new BookDaoImp(con);
 	@Autowired
 	private AuthorDaoImp genDaoAuthor;
-	private BookCopiesDao bookCopiesDao = new BookCopiesDaoImp(con);
+	@Autowired
+	private BookDaoImp bookDao;
+	@Autowired
+	private BookCopiesDaoImp bookCopiesDao;
 	
 	
 	public List<LibraryBranch> getAllBranches() {
@@ -63,7 +64,7 @@ public class LibrarianService {
 	public List<BkCopiesDTO> getBookCopiesBookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
 		try {
-			List<BookCopies> bookCopies = bookCopiesDao.getAll();
+			List<BookCopies> bookCopies = bookCopiesDao.findAll();
 			Book book;
 			Author author;
 			
@@ -73,7 +74,7 @@ public class LibrarianService {
 			for(BookCopies bc : bookCopies) {
 				if(bc.getBranchId() == branchId) {
 					//kind of like doing joins
-					book = genDaoBook.get(bc.getBookId());
+					book = bookDao.findById(bc.getBookId()).get();
 					author = genDaoAuthor.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
@@ -92,14 +93,8 @@ public class LibrarianService {
 	
 	public void updateNumCopies(int bookId, int branchId, int numCopies) {
 		BookCopies bc = new BookCopies(bookId, branchId, numCopies);
-		try {
-			bookCopiesDao.update(bc);
-			con.commit();
-			System.out.println("Update Book Copies Success!");
-		} catch (SQLException e) {
-			System.out.println("Unable to update copies!");
-			myRollBack();
-		}
+		bookCopiesDao.saveAndFlush(bc);
+		System.out.println("Update Book Copies Success!");
 	}
 	
 	private void myRollBack() {
