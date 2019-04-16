@@ -21,6 +21,8 @@ import com.st.lms.exception.NotFoundException;
 import com.st.lms.models.Author;
 import com.st.lms.models.Book;
 import com.st.lms.models.BookLoans;
+import com.st.lms.models.Borrower;
+import com.st.lms.models.LibraryBranch;
 import com.st.lms.models.Publisher;
 import com.st.lms.service.AdminService;
 import com.st.lms.utils.DateCalculations;
@@ -254,57 +256,160 @@ public class AdminController {
 	
 	/*###################################################################################*/
 	
-	//TODO: Author
-	@GetMapping(path="/author/{authorId}", produces= {"application/json"})
-    public ResponseEntity<com.st.lms.models.Author> getAuthor(@PathVariable("authorId") int authorId){
-		com.st.lms.models.Author author;
-        ResponseEntity<com.st.lms.models.Author> response;
-        
-        author = adminService.getAuthor(authorId);
-        if(author == null)
-            response = new ResponseEntity<Author>(author, HttpStatus.BAD_REQUEST);
-        else {
-            response = new ResponseEntity<Author>(author, HttpStatus.OK);
-        }
-        return response;
+	@GetMapping("/authors")
+	public List<Author> getAllAuthors() {
+		return adminService.getAllAuthors();
+	}
+	
+	@GetMapping("/author/{id}")
+	public ResponseEntity<Author> getAuthor(@PathVariable int id) throws NotFoundException {
+		Author author = adminService.getAuthor(id);
+		if(author == null) {
+			throw new NotFoundException("Author with id=" + id + " not found");
+		}
 		
+		return new ResponseEntity<>(author, HttpStatus.OK);
 	}
 	
-	@PostMapping(path="/author/")
-	public ResponseEntity<Author> postAuthor(@RequestBody Author author){
-        ResponseEntity<Author> response;
-        if(adminService.getAuthor(author.getAuthorId()) != null)
-            return new ResponseEntity<Author>(author, HttpStatus.CONFLICT);
-        return new ResponseEntity<Author>(author, HttpStatus.CREATED);
-	}
-	
-	//TODO: check if {authorId} works if I don't have it as a path variable
-	@PutMapping(path="/author/{authorId}")
-	public ResponseEntity<Author> Author(@PathVariable("authorId") int authorId){
-		Author author;
-        ResponseEntity<Author> response;
-        author = adminService.getAuthor(authorId);
-        
-        if(author == null)
-            response = new ResponseEntity<Author>(author, HttpStatus.BAD_REQUEST);
-        else {
-            response = new ResponseEntity<Author>(author, HttpStatus.OK);
-        }
-        return response;
-	}
-	
-	@DeleteMapping(path="/author/{authorId}")
-	public ResponseEntity<Author> deleteAuthor(@PathVariable("authorId") int authorId){
-		Author author;
-        ResponseEntity<Author> response;
-        
-        author = adminService.getAuthor(authorId);
-        if(author == null)
-            response = new ResponseEntity<Author>(author, HttpStatus.BAD_REQUEST);
-        else {
-            response = new ResponseEntity<Author>(author, HttpStatus.OK);
-        }
-        return response;
+	@PostMapping("/author")
+	public ResponseEntity<Author> addAuthor(@RequestBody Author author) throws AlreadyExistsException {
+		List<Author> authors = adminService.getAllAuthors();
+		for(Author a : authors) {
+			if(a.getAuthorName().equals(author.getAuthorName())) {
+				throw new AlreadyExistsException("Author " + author.getAuthorName() + " already exists in the database");
+			}
+		}
 		
+		adminService.addAuthor(author);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+	
+	@PutMapping("/author/{id}")
+	public ResponseEntity<Author> updateAuthor(@PathVariable int id, @RequestBody Author author) 
+	throws NotFoundException {
+		
+		Author existingAuthor = adminService.getAuthor(id);
+		if(existingAuthor == null) {
+			throw new NotFoundException("Update failed. Author with id=" + id + " not found");
+		}
+		
+		adminService.updateAuthor(id, author);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@DeleteMapping("/author/{id}")
+	public ResponseEntity<Author> deleteAuthor(@PathVariable int id) throws NotFoundException {
+		Author author = adminService.getAuthor(id);
+		if(author == null) {
+			throw new NotFoundException("Delete failed. Author with id=" + id + " not found");
+		}
+		
+		adminService.deleteAuthor(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@GetMapping("/borrowers")
+	public List<Borrower> getAllBorrowers() {
+		return adminService.getAllBorrowers();
+	}
+	
+	@GetMapping("/borrower/{id}")
+	public ResponseEntity<Borrower> getBorrower(@PathVariable int id) throws NotFoundException {
+		Borrower borrower = adminService.getBorrower(id);
+		if(borrower == null) {
+			throw new NotFoundException("Borrower with id=" + id + " not found");
+		}
+		
+		return new ResponseEntity<>(borrower, HttpStatus.OK);
+	}
+	
+	@PostMapping("/borrower")
+	public ResponseEntity<Borrower> addBorrower(@RequestBody Borrower borr) throws AlreadyExistsException {
+		List<Borrower> borrowers = adminService.getAllBorrowers();
+		for(Borrower b : borrowers) {
+			if(b.getName().equals(borr.getName())) {
+				throw new AlreadyExistsException("Borrower " + borr.getName() + " already exists in the database");
+			}
+		}
+		
+		adminService.addBorrower(borr);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+	
+	@PutMapping("/borrower/{id}")
+	public ResponseEntity<Borrower> updateBorrower(@PathVariable int id, @RequestBody Borrower borr) 
+	throws NotFoundException {
+		
+		Borrower borrower = adminService.getBorrower(id);
+		if(borrower == null) {
+			throw new NotFoundException("Update failed. Borrower with id=" + id + " not found");
+		}
+		
+		adminService.updateBorrower(id, borr);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@DeleteMapping("/borrower/{id}")
+	public ResponseEntity<Borrower> deleteBorrower(@PathVariable int id) throws NotFoundException {
+		Borrower borrower = adminService.getBorrower(id);
+		if(borrower == null) {
+			throw new NotFoundException("Delete failed. Borrower with id=" + id + " not found");
+		}
+		
+		adminService.deleteBorrower(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@GetMapping("/libraryBranches")
+	public List<LibraryBranch> getAllLibraryBranches() {
+		return adminService.getAllBranches();
+	}
+	
+	@GetMapping("/libraryBranch/{id}")
+	public ResponseEntity<LibraryBranch> getLibraryBranch(@PathVariable int id) throws NotFoundException {
+		LibraryBranch libraryBranch = adminService.getLibraryBranch(id);
+		if(libraryBranch == null) {
+			throw new NotFoundException("LibraryBranch with id=" + id + " not found");
+		}
+		
+		return new ResponseEntity<>(libraryBranch, HttpStatus.OK);
+	}
+	
+	@PostMapping("/libraryBranch")
+	public ResponseEntity<LibraryBranch> addLibraryBranch(@RequestBody LibraryBranch lb) throws AlreadyExistsException {
+		List<LibraryBranch> branches = adminService.getAllBranches();
+		for(LibraryBranch b : branches) {
+			if(b.getBranchName().equals(lb.getBranchName())) {
+				throw new AlreadyExistsException("LibraryBranch " + lb.getBranchName() + " already exists in the database");
+			}
+		}
+		
+		//ok if code gets here
+		adminService.addLibraryBranch(lb);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+	
+	@PutMapping("/libraryBranch/{id}")
+	public ResponseEntity<LibraryBranch> updateLibraryBranch(@PathVariable int id, @RequestBody LibraryBranch lb) 
+	throws NotFoundException {
+		
+		LibraryBranch libraryBranch = adminService.getLibraryBranch(id);
+		if(libraryBranch == null) {
+			throw new NotFoundException("Update failed. LibraryBranch with id=" + id + " not found");
+		}
+		
+		adminService.updateLibraryBranch(id, lb);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@DeleteMapping("/libraryBranch/{id}")
+	public ResponseEntity<LibraryBranch> deleteLibraryBranch(@PathVariable int id) throws NotFoundException {
+		LibraryBranch libraryBranch = adminService.getLibraryBranch(id);
+		if(libraryBranch == null) {
+			throw new NotFoundException("Delete failed. LibraryBranch with id=" + id + " not found");
+		}
+		
+		adminService.deleteLibraryBranch(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
