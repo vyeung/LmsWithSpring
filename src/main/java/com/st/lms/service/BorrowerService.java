@@ -35,26 +35,25 @@ public class BorrowerService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
 	
-	private GenericDao<Borrower> genDaoBorrower = new BorrowerDaoImp(con);
-	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
-	
 	@Autowired
 	private BookDaoImp bookDao;
-	
-	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
-	
 	@Autowired
 	private BookLoansDaoImp bookLoansDao;
-	
 	@Autowired
 	private BookCopiesDaoImp bookCopiesDao;
+	@Autowired
+	private BorrowerDaoImp borrowerDao;
+	@Autowired
+	private LibBranchDaoImp libBranchDao;
+	@Autowired
+	private AuthorDaoImp authorDao;
 	
 	
 	public boolean borCardNoExists(int cardNo) {
 		boolean flag;
 		Borrower bor = null;
 		try {
-			bor = genDaoBorrower.get(cardNo);
+			bor = borrowerDao.findById(cardNo).get();
 			con.commit();
 		} catch (SQLException e) {
 			System.err.println("Problem with checking card number!");
@@ -72,7 +71,7 @@ public class BorrowerService {
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
 		try {
-			libBranches = genDaoLibBranch.getAll();
+			libBranches = libBranchDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.out.println("Get All Branches Failed! :(");
@@ -105,7 +104,7 @@ public class BorrowerService {
 				if(bc.getBranchId()==branchId && bc.getNoOfCopies()>=1) {
 					//kind of like doing joins
 					book = bookDao.findById(bc.getBookId()).get();
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = authorDao.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
 					list.add(obj);
@@ -151,7 +150,7 @@ public class BorrowerService {
 			list = new ArrayList<>();
 			
 			for(BookLoans bl : bookLoans) {
-				libBranch = genDaoLibBranch.get(bl.getBranchId());
+				libBranch = libBranchDao.findById(bl.getBranchId()).get();
 				
 				if(bl.getCardNo()==cardNo && bl.getDateOut()!=null && bl.getDueDate()!=null) {
 					obj = new BkLoansBranchDTO(bl, libBranch);
@@ -187,7 +186,8 @@ public class BorrowerService {
 			for(BookLoans bl : bookLoans) {
 				if(bl.getCardNo()==cardNo && bl.getBranchId()==branchId) {
 					book = bookDao.findById(bl.getBookId()).get();
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = authorDao.findById(book.getAuthorId()).get();
+
 					obj = new BkLoansBkAuthDTO(bl, book, author);
 					list.add(obj);
 				}

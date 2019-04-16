@@ -25,13 +25,12 @@ public class LibrarianService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
 	
-	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
-	
+	@Autowired
+	private LibBranchDaoImp genDaoLibBranch;
+	@Autowired
+	private AuthorDaoImp genDaoAuthor;
 	@Autowired
 	private BookDaoImp bookDao;
-	
-	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
-	
 	@Autowired
 	private BookCopiesDaoImp bookCopiesDao;
 	
@@ -39,7 +38,7 @@ public class LibrarianService {
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
 		try {
-			libBranches = genDaoLibBranch.getAll();
+			libBranches = genDaoLibBranch.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -48,17 +47,13 @@ public class LibrarianService {
 	}
 	
 	public LibraryBranch getLibraryBranch(int branchId) {
-		try {
-			return genDaoLibBranch.get(branchId);
-		} catch(SQLException e) {
-			return null;
-		}
+		return genDaoLibBranch.findById(branchId).get();
 	}
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
 		LibraryBranch libBranch = new LibraryBranch(branchId, branchName, branchAddr);
 		try {
-			genDaoLibBranch.update(libBranch);
+			genDaoLibBranch.save(libBranch);
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -80,7 +75,7 @@ public class LibrarianService {
 				if(bc.getBranchId() == branchId) {
 					//kind of like doing joins
 					book = bookDao.findById(bc.getBookId()).get();
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = genDaoAuthor.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
 					list.add(obj);

@@ -31,19 +31,20 @@ public class AdminService {
 	
 	Connection con = ConnectionFactory.getMyConnection();
 	
-	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
 	
 	@Autowired
 	private BookDaoImp bookDao;
-	
-	private GenericDao<Borrower> genDaoBorrower = new BorrowerDaoImp(con);
-	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
-	
 	@Autowired
 	private PublisherDaoImp publisherDao;
-	
 	@Autowired
 	private BookLoansDaoImp bookLoansDao;
+	@Autowired
+	private AuthorDaoImp authorDao;
+	@Autowired
+	private BorrowerDaoImp borrowerDao;
+	@Autowired
+	private LibBranchDaoImp libraryBranchDao;
+
 
 	
 	public boolean bookTitleExists(String bookTitle) {
@@ -86,23 +87,19 @@ public class AdminService {
 	
 	public BkAuthPubDTO getBookWithAuthAndPub(int bookId) {
 		BkAuthPubDTO obj = null;
-		try {
-			List<Book> books = bookDao.findAll();
-			Author author;
-			Publisher publisher;
-			
-			for(Book b : books) {
-				if(b.getBookId() == bookId) {
-					author = genDaoAuthor.get(b.getAuthorId());
-					publisher = publisherDao.findById(b.getPubId()).get();
-					
-					obj = new BkAuthPubDTO(bookId, b.getTitle(), 
-									       author.getAuthorName(), publisher.getPublisherName());
-				}
+		List<Book> books = bookDao.findAll();
+		Author author;
+		Publisher publisher;
+		
+		for(Book b : books) {
+			if(b.getBookId() == bookId) {
+				author = authorDao.findById(b.getAuthorId()).get();
+				publisher = publisherDao.findById(b.getPubId()).get();
+
+				
+				obj = new BkAuthPubDTO(bookId, b.getTitle(), 
+								       author.getAuthorName(), publisher.getPublisherName());
 			}
-		}
-		catch(SQLException e) {
-			System.err.println("Unable to load book with author and publisher!");
 		}
 		
 		return obj;
@@ -111,25 +108,21 @@ public class AdminService {
 	public List<BkAuthPubDTO> getBooksWithAuthAndPub() {
 		List<BkAuthPubDTO> list = null;
 		
-		try {
-			List<Book> books = bookDao.findAll();
-			Author author;
-			Publisher publisher;
+		List<Book> books = bookDao.findAll();
+		Author author;
+		Publisher publisher;
+		
+		BkAuthPubDTO obj;
+		list = new ArrayList<>();
+		
+		for(Book b : books) {
+
+			author = authorDao.findById(b.getAuthorId()).get();
+			publisher = publisherDao.findById(b.getPubId()).get(); //.get(b.getPubId());
 			
-			BkAuthPubDTO obj;
-			list = new ArrayList<>();
-			
-			for(Book b : books) {
-				author = genDaoAuthor.get(b.getAuthorId());
-				publisher = publisherDao.findById(b.getPubId()).get(); //.get(b.getPubId());
-				
-				obj = new BkAuthPubDTO(b.getBookId(), b.getTitle(), 
-									   author.getAuthorName(), publisher.getPublisherName());
-				list.add(obj);
-			}
-		}
-		catch(SQLException e) {
-			System.err.println("Unable to load books with author and publisher!");
+			obj = new BkAuthPubDTO(b.getBookId(), b.getTitle(), 
+								   author.getAuthorName(), publisher.getPublisherName());
+			list.add(obj);
 		}
 		
 		return list;
@@ -159,7 +152,7 @@ public class AdminService {
 	public boolean authNameExists(String authName) {
 		List<Author> authors = null;
 		try {
-			authors = genDaoAuthor.getAll();
+			authors = authorDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.err.println("Failure in authNameExists()");
@@ -173,66 +166,37 @@ public class AdminService {
 		return false;
 	}
 	
-	public void addAuthor(String authName) {
-		Author author = new Author();
-		author.setAuthorName(authName);
-		try {
-			genDaoAuthor.add(author);
-			con.commit();
-			System.out.println("Add Author Success!");
-		} catch (SQLException e) {
-			System.out.println("Add Author Failed!");
-			myRollBack();
-		}
-	}
-	
-	public Author getAuthor(int authId) {
-		Author author = null;
-		try {
-			author = genDaoAuthor.get(authId);
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get Author Failed! :(");
-			myRollBack();
-		}
-		return author;
-	}
-	
 	public List<Author> getAllAuthors() {
-		List<Author> authors = null;
-		try {
-			authors = genDaoAuthor.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Authors Failed! :(");
-			myRollBack();
-		}
-		return authors;
-	}	
-	
-	public void updateAuthor(int authId, String authName) {
-		Author author = new Author(authId, authName);
-		try {
-			genDaoAuthor.update(author);
-			con.commit();
-			System.out.println("Update Author Success!");
-		} catch (SQLException e) {
-			System.out.println("Update Author Failed! :(");
-			myRollBack();
-		}
+		return authorDao.findAll();
 	}
 	
-	public void deleteAuthor(int authId) {
-		Author author = new Author();
-		author.setAuthorId(authId);
-		try {
-			genDaoAuthor.delete(author);
-			con.commit();
-			System.out.println("Delete Author Success!");
-		} catch (SQLException e) {
-			System.out.println("Delete Author Failed! :(");	
-			myRollBack();
-		}
+	public Author getAuthor(int id) {
+		
+		Optional<Author> author = authorDao.findById(id);
+		if(author.isPresent())
+			return author.get();
+		return null;
+	}
+	
+	public Author addAuthor(Author author) {
+		
+		Optional<Author> existingAuthor = authorDao.findById(author.getAuthorId());
+		if(!existingAuthor.isPresent()) 
+			return authorDao.save(author);
+		return null;
+	}
+	
+	public Author updateAuthor(int id, Author author) {
+		
+		Optional<Author> existingAuthor = authorDao.findById(id);
+		if(!existingAuthor.isPresent())
+			return null;
+		return authorDao.save(author);
+	}
+	
+	public void deleteAuthor(int id) {
+		
+		authorDao.deleteById(id);
 	}
 	
 	/*#########################################################################*/
@@ -294,7 +258,7 @@ public class AdminService {
 	public boolean branchNameExists(String branchName) {
 		List<LibraryBranch> libBranch = null;
 		try {
-			libBranch = genDaoLibBranch.getAll();
+			libBranch = libraryBranchDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.err.println("Failure in branchNameExists()");
@@ -309,83 +273,53 @@ public class AdminService {
 	}
 	
 	public boolean branchInfoExists(String branchName, String branchAddr) {
-		List<LibraryBranch> libBranch = null;
+		List<LibraryBranch> libBranches = null;
 		try {
-			libBranch = genDaoLibBranch.getAll();
+			libBranches = libraryBranchDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.out.println("Failure in branchInfoExists");
 			myRollBack();
 		}
 		
-		for(LibraryBranch lb : libBranch) {
+		for(LibraryBranch lb : libBranches) {
 			if(lb.getBranchName().equals(branchName) && lb.getBranchAddress().equals(branchAddr))
 				return true;
 		}
 		return false;
 	}
 	
-	public void addLibraryBranch(String branchName, String branchAddr) {
-		LibraryBranch lb = new LibraryBranch();
-		lb.setBranchName(branchName);
-		lb.setBranchAddress(branchAddr);
-		try {
-			genDaoLibBranch.add(lb);
-			con.commit();
-			System.out.println("Add Branch Success!");
-		} catch (SQLException e) {
-			System.out.println("Add Branch Failed! :(");
-			myRollBack();
-		}
-	}
-	
-	public LibraryBranch getLibBranch(int branchId) {
-		LibraryBranch libBranch = null;
-		try {
-			libBranch = genDaoLibBranch.get(branchId);
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get Branch Failed! :(");
-			myRollBack();
-		}
-		return libBranch;
-	}
-	
 	public List<LibraryBranch> getAllBranches() {
-		List<LibraryBranch> libBranches = null;
-		try {
-			libBranches = genDaoLibBranch.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Branches Failed! :(");
-			myRollBack();
-		}
-		return libBranches;
+		return libraryBranchDao.findAll();
 	}
 	
-	public void updateLibraryBranch(int branchId, String branchName, String branchAddr) {
-		LibraryBranch lb = new LibraryBranch(branchId, branchName, branchAddr);
-		try {
-			genDaoLibBranch.update(lb);
-			con.commit();
-			System.out.println("Update Branch Success!");
-		} catch (SQLException e) {
-			System.out.println("Update Branch Failed! :(");
-			myRollBack();
-		}
+	public LibraryBranch getLibraryBranch(int id) {
+		
+		Optional<LibraryBranch> libraryBranch = libraryBranchDao.findById(id);
+		if(libraryBranch.isPresent())
+			return libraryBranch.get();
+		return null;
 	}
 	
-	public void deleteLibraryBranch(int branchId) {
-		LibraryBranch lb = new LibraryBranch();
-		lb.setBranchId(branchId);
-		try {
-			genDaoLibBranch.delete(lb);
-			con.commit();
-			System.out.println("Delete Branch Success!");
-		} catch (SQLException e) {
-			System.out.println("Delete Branch Failed! :(");
-			myRollBack();
-		}
+	public LibraryBranch addLibraryBranch(LibraryBranch libraryBranch) {
+		
+		Optional<LibraryBranch> existingLibraryBranch = libraryBranchDao.findById(libraryBranch.getBranchId());
+		if(!existingLibraryBranch.isPresent()) 
+			return libraryBranchDao.save(libraryBranch);
+		return null;
+	}
+	
+	public LibraryBranch updateLibraryBranch(int id, LibraryBranch libraryBranch) {
+		
+		Optional<LibraryBranch> existingLibraryBranch = libraryBranchDao.findById(id);
+		if(!existingLibraryBranch.isPresent())
+			return null;
+		return libraryBranchDao.save(libraryBranch);
+	}
+	
+	public void deleteLibraryBranch(int id) {
+		
+		libraryBranchDao.deleteById(id);
 	}
 	
 	/*#########################################################################*/
@@ -393,7 +327,7 @@ public class AdminService {
 	public boolean borrowerNameExists(String borrowerName) {
 		List<Borrower> borrs = null;
 		try {
-			borrs = genDaoBorrower.getAll();
+			borrs = borrowerDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.err.println("Failure in borrowerNameExists()");
@@ -407,68 +341,37 @@ public class AdminService {
 		return false;
 	}
 	
-	public void addBorrower(String name, String addr, String phone) {
-		Borrower borr = new Borrower();
-		borr.setName(name);
-		borr.setAddress(addr);
-		borr.setPhone(phone);
-		try {
-			genDaoBorrower.add(borr);
-			con.commit();
-			System.out.println("Add Borrower Success!");
-		} catch (SQLException e) {
-			System.out.println("Add Borrower Failed! :(");
-			myRollBack();
-		}
-	}
-	
-	public Borrower getBorrower(int borrId) {
-		Borrower borrower = null;
-		try {
-			borrower = genDaoBorrower.get(borrId);
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get Borrower Failed! :(");
-			myRollBack();
-		}
-		return borrower;
-	}
-	
 	public List<Borrower> getAllBorrowers() {
-		List<Borrower> borrowers = null;
-		try {
-			borrowers = genDaoBorrower.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Borrowers Failed! :(");
-			myRollBack();
-		}
-		return borrowers;
+		return borrowerDao.findAll();
 	}
 	
-	public void updateBorrower(int cardNo, String name, String addr, String phone) {
-		Borrower borr = new Borrower(cardNo, name, addr, phone);
-		try {
-			genDaoBorrower.update(borr);
-			con.commit();
-			System.out.println("Update Borrower Success!");
-		} catch (SQLException e) {
-			System.out.println("Update Borrower Failed! :(");
-			myRollBack();
-		}
+	public Borrower getBorrower(int id) {
+		
+		Optional<Borrower> borrower = borrowerDao.findById(id);
+		if(borrower.isPresent())
+			return borrower.get();
+		return null;
 	}
 	
-	public void deleteBorrower(int cardNo) {
-		Borrower borr = new Borrower();
-		borr.setCardNo(cardNo);
-		try {
-			genDaoBorrower.delete(borr);
-			con.commit();
-			System.out.println("Delete Borrower Success!");	
-		} catch (SQLException e) {
-			System.out.println("Delete Borrower Failed! :(");
-			myRollBack();
-		}
+	public Borrower addBorrower(Borrower borrower) {
+		
+		Optional<Borrower> existingBorrower = borrowerDao.findById(borrower.getCardNo());
+		if(!existingBorrower.isPresent()) 
+			return borrowerDao.save(borrower);
+		return null;
+	}
+	
+	public Borrower updateBorrower(int id, Borrower borrower) {
+		
+		Optional<Borrower> existingBorrower = borrowerDao.findById(id);
+		if(!existingBorrower.isPresent())
+			return null;
+		return borrowerDao.save(borrower);
+	}
+	
+	public void deleteBorrower(int id) {
+		
+		borrowerDao.deleteById(id);
 	}
 	
 	/*#########################################################################*/	
