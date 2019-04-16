@@ -1,25 +1,47 @@
 package com.st.lms.models;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //removes these 2 fields from JSON response object
+@Entity
+@Table(name = "tbl_publisher")
 public class Publisher {
-	private int publisherId;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer publisherId;
+	
+	@Column(name = "publisherName")
 	private String publisherName;
+	
+	@Column(name = "publisherAddress")
 	private String publisherAddress;
+	
+	@Column(name = "publisherPhone")
 	private String publisherPhone;
+	
 	
 	public Publisher() {}
 	
-	public Publisher(int publisherId, String publisherName, String publisherAddress, String publisherPhone) {
+	public Publisher(Integer publisherId, String publisherName, String publisherAddress, String publisherPhone) {
 		this.publisherId = publisherId;
 		this.publisherName = publisherName;
 		this.publisherAddress = publisherAddress;
 		this.publisherPhone = publisherPhone;
 	}
 
-	public int getPublisherId() {
+	public Integer getPublisherId() {
 		return publisherId;
 	}
 
-	public void setPublisherId(int publisherId) {
+	public void setPublisherId(Integer publisherId) {
 		this.publisherId = publisherId;
 	}
 
