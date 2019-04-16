@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.st.lms.dao.GenericDao;
 import com.st.lms.daoImp.AuthorDaoImp;
@@ -121,6 +122,7 @@ public class BorrowerService {
 		return list;
 	}
 	
+	@Transactional
 	public void checkOutBook(int bookId, int branchId, int cardNo, int noOfCopies) {
 		Date dateOut, dueDate;
 		dateOut = (Date) DateCalculations.getCurrentTime();
@@ -213,6 +215,7 @@ public class BorrowerService {
 		return numOfCopies;
 	}
 	
+	@Transactional
 	public void returnBook(int bookId, int branchId, int cardNo, int noOfCopies) {
 		BookLoans bl = new BookLoans();
 		bl.setBookId(bookId);

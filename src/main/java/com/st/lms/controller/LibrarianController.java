@@ -28,6 +28,14 @@ public class LibrarianController {
 		return librarianService.getAllBranches();
 	}
 	
+	@GetMapping("/libraries/{branchId}")
+	public ResponseEntity<LibraryBranch> getLibraryBranch(@PathVariable int branchId) throws NotFoundException{
+		LibraryBranch branch = librarianService.getLibraryBranch(branchId);
+		if( branch == null)
+			throw new NotFoundException("Get", "libray branch", branchId);
+		return new ResponseEntity<LibraryBranch>(branch, HttpStatus.OK);
+	}
+	
 	@PutMapping("/libraries/{branchId}")
 	public ResponseEntity<LibraryBranch> updateLibraryBranch(@PathVariable int branchId, @RequestBody LibraryBranch branch) throws NotFoundException{
 		if( librarianService.getLibraryBranch(branchId) == null)
@@ -41,7 +49,7 @@ public class LibrarianController {
 		return librarianService.getBookCopiesBookAndTitle(id);
 	}
 	
-	@PutMapping("/libraries{branchId}/book_copies/{bookId}/{numCopies}")
+	@PutMapping("/libraries/{branchId}/book_copies/{bookId}/{numCopies}")
 	public ResponseEntity<BkCopiesDTO> updateBookCopies(@PathVariable int branchId,@PathVariable int bookId,@PathVariable int numCopies) throws NotFoundException{
 		librarianService.updateNumCopies(bookId, branchId, numCopies);
 		return new ResponseEntity<>(HttpStatus.CREATED);
