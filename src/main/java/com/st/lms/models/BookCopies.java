@@ -1,39 +1,60 @@
 package com.st.lms.models;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@IdClass(BookCopiesPrimaryKey.class)
+@Entity
+@Table(name = "tbl_book_copies")
 public class BookCopies {
-	private int bookId;
-	private int branchId;
-	private int noOfCopies;
+	
+	@Id
+	@Column(name = "bookId")
+	private Integer bookId;
+	
+	@Id
+	@Column(name = "branchId")
+	private Integer branchId;
+	
+	@Column(name = "noOfCopies")
+	private Integer noOfCopies;
+	
 	
 	public BookCopies() {}
 	
-	public BookCopies(int bookId, int branchId, int noOfCopies) {
+	public BookCopies(Integer bookId, Integer branchId, Integer noOfCopies) {
 		this.bookId = bookId;
 		this.branchId = branchId;
 		this.noOfCopies = noOfCopies;
 	}
 
-	public int getBookId() {
+	public Integer getBookId() {
 		return bookId;
 	}
 
-	public void setBookId(int bookId) {
+	public void setBookId(Integer bookId) {
 		this.bookId = bookId;
 	}
 
-	public int getBranchId() {
+	public Integer getBranchId() {
 		return branchId;
 	}
 
-	public void setBranchId(int branchId) {
+	public void setBranchId(Integer branchId) {
 		this.branchId = branchId;
 	}
 
-	public int getNoOfCopies() {
+	public Integer getNoOfCopies() {
 		return noOfCopies;
 	}
 
-	public void setNoOfCopies(int noOfCopies) {
+	public void setNoOfCopies(Integer noOfCopies) {
 		this.noOfCopies = noOfCopies;
 	}
 
