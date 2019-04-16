@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.st.lms.dao.BookCopiesDao;
-import com.st.lms.dao.BookLoansDao;
 import com.st.lms.dao.GenericDao;
 import com.st.lms.daoImp.AuthorDaoImp;
 import com.st.lms.daoImp.BookCopiesDaoImp;
@@ -24,6 +23,7 @@ import com.st.lms.dto.BkLoansBranchDTO;
 import com.st.lms.models.Author;
 import com.st.lms.models.Book;
 import com.st.lms.models.BookCopies;
+import com.st.lms.models.BookCopiesPrimaryKey;
 import com.st.lms.models.BookLoans;
 import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
@@ -37,10 +37,17 @@ public class BorrowerService {
 	
 	private GenericDao<Borrower> genDaoBorrower = new BorrowerDaoImp(con);
 	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
-	private GenericDao<Book> genDaoBook = new BookDaoImp(con);
+	
+	@Autowired
+	private BookDaoImp bookDao;
+	
 	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
-	private BookLoansDao bookLoansDao = new BookLoansDaoImp(con);
-	private BookCopiesDao bookCopiesDao = new BookCopiesDaoImp(con);
+	
+	@Autowired
+	private BookLoansDaoImp bookLoansDao;
+	
+	@Autowired
+	private BookCopiesDaoImp bookCopiesDao;
 	
 	
 	public boolean borCardNoExists(int cardNo) {
@@ -87,7 +94,7 @@ public class BorrowerService {
 	public List<BkCopiesDTO> getBkCopiesGreater1BookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
 		try {
-			List<BookCopies> bookCopies = bookCopiesDao.getAll();
+			List<BookCopies> bookCopies = bookCopiesDao.findAll();
 			Book book;
 			Author author;
 			
@@ -97,7 +104,7 @@ public class BorrowerService {
 			for(BookCopies bc : bookCopies) {			
 				if(bc.getBranchId()==branchId && bc.getNoOfCopies()>=1) {
 					//kind of like doing joins
-					book = genDaoBook.get(bc.getBookId());
+					book = bookDao.findById(bc.getBookId()).get();
 					author = genDaoAuthor.get(book.getAuthorId());
 					
 					obj = new BkCopiesDTO(bc, book, author);
@@ -121,8 +128,8 @@ public class BorrowerService {
 		BookLoans bl = new BookLoans(bookId, branchId, cardNo, dateOut, dueDate);
 		BookCopies bc = new BookCopies(bookId, branchId, noOfCopies-1);
 		try {
-			bookLoansDao.add(bl);      //add an entry to book_loans
-			bookCopiesDao.update(bc);  //update noOfCopies with 1 less of that book
+			bookLoansDao.save(bl);           //add an entry to book_loans
+			bookCopiesDao.saveAndFlush(bc);  //update noOfCopies with 1 less of that book
 			con.commit();
 			System.out.println("Book Checked Out!");
 		} catch (SQLException e) {
@@ -137,7 +144,7 @@ public class BorrowerService {
 	public List<BkLoansBranchDTO> getBranchesWithBkLoans(int cardNo) {
 		List<BkLoansBranchDTO> list = null;
 		try {
-			List<BookLoans> bookLoans = bookLoansDao.getAll();
+			List<BookLoans> bookLoans = bookLoansDao.findAll();
 			LibraryBranch libBranch;
 			
 			BkLoansBranchDTO obj;
@@ -170,7 +177,7 @@ public class BorrowerService {
 	public List<BkLoansBkAuthDTO> getBooksFromBranch(int cardNo, int branchId) {
 		List<BkLoansBkAuthDTO> list = null;
 		try {
-			List<BookLoans> bookLoans = bookLoansDao.getAll();
+			List<BookLoans> bookLoans = bookLoansDao.findAll();
 			Book book;
 			Author author;
 			
@@ -179,7 +186,7 @@ public class BorrowerService {
 			
 			for(BookLoans bl : bookLoans) {
 				if(bl.getCardNo()==cardNo && bl.getBranchId()==branchId) {
-					book = genDaoBook.get(bl.getBookId());
+					book = bookDao.findById(bl.getBookId()).get();
 					author = genDaoAuthor.get(book.getAuthorId());
 					obj = new BkLoansBkAuthDTO(bl, book, author);
 					list.add(obj);
@@ -197,13 +204,10 @@ public class BorrowerService {
 	
 	public int getNoOfCopies(int bookId, int branchId) {
 		int numOfCopies = 0;
-		try {
-			numOfCopies = bookCopiesDao.getNoOfCopies(bookId, branchId);
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Get num of copies Failed!");
-			myRollBack();
-		}
+		
+		BookCopiesPrimaryKey bcpk = new BookCopiesPrimaryKey(bookId, branchId);
+		BookCopies bc = bookCopiesDao.findById(bcpk).get();
+		numOfCopies = bc.getNoOfCopies();
 		
 		return numOfCopies;
 	}
@@ -220,8 +224,8 @@ public class BorrowerService {
 		bc.setNoOfCopies(noOfCopies+1);
 		
 		try {
-			bookLoansDao.delete(bl);  //delete entry in book loans
-			bookCopiesDao.update(bc); //update noOfCopies with 1 more of that book
+			bookLoansDao.delete(bl);        //delete entry in book loans
+			bookCopiesDao.saveAndFlush(bc); //update noOfCopies with 1 more of that book
 			con.commit();
 			System.out.println("Book Returned!");
 		} catch (SQLException e) {

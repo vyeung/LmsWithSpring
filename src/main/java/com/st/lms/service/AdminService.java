@@ -5,10 +5,11 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.st.lms.dao.BookLoansDao;
 import com.st.lms.dao.GenericDao;
 import com.st.lms.daoImp.AuthorDaoImp;
 import com.st.lms.daoImp.BookDaoImp;
@@ -31,22 +32,23 @@ public class AdminService {
 	Connection con = ConnectionFactory.getMyConnection();
 	
 	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
-	private GenericDao<Book> genDaoBook = new BookDaoImp(con);
+	
+	@Autowired
+	private BookDaoImp bookDao;
+	
 	private GenericDao<Borrower> genDaoBorrower = new BorrowerDaoImp(con);
 	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
-	private GenericDao<Publisher> genDaoPublisher = new PublisherDaoImp(con);
-	private BookLoansDao bookLoansDao = new BookLoansDaoImp(con);
+	
+	@Autowired
+	private PublisherDaoImp publisherDao;
+	
+	@Autowired
+	private BookLoansDaoImp bookLoansDao;
 
 	
 	public boolean bookTitleExists(String bookTitle) {
 		List<Book> books = null;
-		try {
-			books = genDaoBook.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Failure in bookTitleExists()");
-			myRollBack();
-		}
+		books = bookDao.findAll();
 		
 		for(Book b : books) {
 			if(b.getTitle().equals(bookTitle))
@@ -60,52 +62,39 @@ public class AdminService {
 		b.setTitle(title);
 		b.setAuthorId(authId);
 		b.setPubId(pubId);
-		try {
-			genDaoBook.add(b);
-			con.commit();
-			System.out.println("Add Book Success!");
 
-		} catch (SQLException e) {
-			System.out.println("Add Book Failed! :(");
-			myRollBack();
-		}
+		bookDao.save(b);
+		System.out.println("Add Book Success!");
 	}
 	
 	public Book getBook(int bookId) {
-		Book book = null;
-		try {
-			book = genDaoBook.get(bookId);
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get Book Failed! :(");	
-			myRollBack();
-		}
-		return book;
+		//Book book = null;
+		//book = bookDao.findById(bookId).get();
+		//return book;
+		
+		//prevents having to throw NoSuchElementException
+		Optional<Book> book;
+		book = bookDao.findById(bookId);
+		return book.isPresent() ? book.get() : null;
 	}
 	
 	public List<Book> getAllBooks() {
 		List<Book> books = null;
-		try {
-			books = genDaoBook.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Books Failed! :(");
-			myRollBack();
-		}
+		books = bookDao.findAll();
 		return books;
 	}
 	
 	public BkAuthPubDTO getBookWithAuthAndPub(int bookId) {
 		BkAuthPubDTO obj = null;
 		try {
-			List<Book> books = genDaoBook.getAll();
+			List<Book> books = bookDao.findAll();
 			Author author;
 			Publisher publisher;
 			
 			for(Book b : books) {
 				if(b.getBookId() == bookId) {
 					author = genDaoAuthor.get(b.getAuthorId());
-					publisher = genDaoPublisher.get(b.getPubId());
+					publisher = publisherDao.findById(b.getPubId()).get();
 					
 					obj = new BkAuthPubDTO(bookId, b.getTitle(), 
 									       author.getAuthorName(), publisher.getPublisherName());
@@ -123,7 +112,7 @@ public class AdminService {
 		List<BkAuthPubDTO> list = null;
 		
 		try {
-			List<Book> books = genDaoBook.getAll();
+			List<Book> books = bookDao.findAll();
 			Author author;
 			Publisher publisher;
 			
@@ -132,7 +121,7 @@ public class AdminService {
 			
 			for(Book b : books) {
 				author = genDaoAuthor.get(b.getAuthorId());
-				publisher = genDaoPublisher.get(b.getPubId());
+				publisher = publisherDao.findById(b.getPubId()).get(); //.get(b.getPubId());
 				
 				obj = new BkAuthPubDTO(b.getBookId(), b.getTitle(), 
 									   author.getAuthorName(), publisher.getPublisherName());
@@ -152,27 +141,17 @@ public class AdminService {
 		book.setTitle(b.getTitle());
 		book.setAuthorId(b.getAuthorId());
 		book.setPubId(b.getPubId());
-		try {
-			genDaoBook.update(book);
-			con.commit();
-			System.out.println("Update Book Success!");
-		} catch (SQLException e) {
-			System.out.println("Update Book Failed! :(");
-			myRollBack();
-		}
+		
+		bookDao.saveAndFlush(book);
+		System.out.println("Update Book Success!");
 	}
 	
 	public void deleteBook(int bookId) {
 		Book b = new Book();
 		b.setBookId(bookId);
-		try {
-			genDaoBook.delete(b);
-			con.commit();
-			System.out.println("Delete Book Success!");
-		} catch (SQLException e) {
-			System.out.println("Delete Book Failed! :(");
-			myRollBack();
-		}
+		
+		bookDao.deleteById(bookId);
+		System.out.println("Delete Book Success!");
 	}
 	
 	/*#########################################################################*/
@@ -259,14 +238,8 @@ public class AdminService {
 	/*#########################################################################*/
 	
 	public boolean pubNameExists(String pubName) {
-		List<Publisher> pub = null;
-		try {
-			pub = genDaoPublisher.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.err.println("Failure in pubNameExists()");
-			myRollBack();
-		}
+		List<Publisher> pub = publisherDao.findAll();
+		System.err.println("Failure in pubNameExists()");
 		
 		for(Publisher p : pub) {
 			if(p.getPublisherName().equals(pubName))
@@ -280,37 +253,20 @@ public class AdminService {
 		pub.setPublisherName(p.getPublisherName());
 		pub.setPublisherAddress(p.getPublisherAddress());
 		pub.setPublisherPhone(p.getPublisherPhone());
-		try {
-			genDaoPublisher.add(pub);
-			con.commit();
-			System.out.println("Add Publisher Success!");
-		} catch (SQLException e) {
-			System.out.println("Add Publisher Failed! :(");	
-			myRollBack();
-		}
+
+		publisherDao.save(pub);
+		System.out.println("Add Publisher Success!");
 	}
 	
 	public Publisher getPublisher(int pubId) {
-		Publisher publisher = null;
-		try {
-			publisher = genDaoPublisher.get(pubId);
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get Publisher Failed! :(");	
-			myRollBack();
-		}
-		return publisher;
+		Optional<Publisher> publisher;
+		publisher = publisherDao.findById(pubId);
+		return publisher.isPresent() ? publisher.get() : null;
 	}
 	
 	public List<Publisher> getAllPublishers() {
 		List<Publisher> pubs = null;
-		try {
-			pubs = genDaoPublisher.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All Publishers Failed! :( ");
-			myRollBack();
-		}
+		pubs = publisherDao.findAll();
 		return pubs;
 	}
 	
@@ -320,27 +276,17 @@ public class AdminService {
 		pub.setPublisherName(p.getPublisherName());
 		pub.setPublisherAddress(p.getPublisherAddress());
 		pub.setPublisherPhone(p.getPublisherPhone());
-		try {
-			genDaoPublisher.update(pub);
-			con.commit();
-			System.out.println("Update Publisher Success!");
-		} catch (SQLException e) {
-			System.out.println("Update Publisher Failed! :(");
-			myRollBack();
-		}
+
+		publisherDao.saveAndFlush(pub);
+		System.out.println("Update Publisher Success!");
 	}
 	
 	public void deletePublisher(int pubId) {
 		Publisher pub = new Publisher();
 		pub.setPublisherId(pubId);
-		try {
-			genDaoPublisher.delete(pub);
-			con.commit();
-			System.out.println("Delete Publisher Success!");
-		} catch (SQLException e) {
-			System.out.println("Delete Publisher Failed! :(");
-			myRollBack();
-		}
+		
+		publisherDao.deleteById(pubId);
+		System.out.println("Delete Publisher Success!");
 	}
 	
 	/*#########################################################################*/
@@ -529,26 +475,14 @@ public class AdminService {
 	
 	public List<BookLoans> getAllBookLoans() {
 		List<BookLoans> bookLoans = null;
-		try {
-			bookLoans = bookLoansDao.getAll();
-			con.commit();
-		} catch (SQLException e) {
-			System.out.println("Get All BookLoans Failed! :(");
-			myRollBack();
-		}
+		bookLoans = bookLoansDao.findAll();
 		return bookLoans;
 	}
 	
 	public void changeDueDate(int bookId, int branchId, int cardNo, Date dateOut, Date dueDate) {
 		BookLoans bl = new BookLoans(bookId, branchId, cardNo, dateOut, dueDate);
-		try {
-			bookLoansDao.update(bl);
-			con.commit();
-			System.out.println("Update BookLoan Success!");
-		} catch (SQLException e) {
-			System.out.println("Update BookLoan Failed! :(");
-			myRollBack();
-		}
+		bookLoansDao.saveAndFlush(bl);;
+		System.out.println("Update BookLoan Success!");
 	}
 	
 	/*#########################################################################*/
