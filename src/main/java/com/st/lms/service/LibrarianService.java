@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.st.lms.dao.BookCopiesDao;
@@ -25,16 +26,18 @@ public class LibrarianService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
 	
-	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
+	@Autowired
+	private LibBranchDaoImp genDaoLibBranch;
 	private GenericDao<Book> genDaoBook = new BookDaoImp(con);
-	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
+	@Autowired
+	private AuthorDaoImp genDaoAuthor;
 	private BookCopiesDao bookCopiesDao = new BookCopiesDaoImp(con);
 	
 	
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
 		try {
-			libBranches = genDaoLibBranch.getAll();
+			libBranches = genDaoLibBranch.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -43,17 +46,13 @@ public class LibrarianService {
 	}
 	
 	public LibraryBranch getLibraryBranch(int branchId) {
-		try {
-			return genDaoLibBranch.get(branchId);
-		} catch(SQLException e) {
-			return null;
-		}
+		return genDaoLibBranch.findById(branchId).get();
 	}
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
 		LibraryBranch libBranch = new LibraryBranch(branchId, branchName, branchAddr);
 		try {
-			genDaoLibBranch.update(libBranch);
+			genDaoLibBranch.save(libBranch);
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -75,7 +74,7 @@ public class LibrarianService {
 				if(bc.getBranchId() == branchId) {
 					//kind of like doing joins
 					book = genDaoBook.get(bc.getBookId());
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = genDaoAuthor.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
 					list.add(obj);

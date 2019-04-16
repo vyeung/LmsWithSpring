@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.st.lms.dao.BookCopiesDao;
@@ -35,10 +36,13 @@ public class BorrowerService {
 	
 	private Connection con = ConnectionFactory.getMyConnection();
 	
-	private GenericDao<Borrower> genDaoBorrower = new BorrowerDaoImp(con);
-	private GenericDao<LibraryBranch> genDaoLibBranch = new LibBranchDaoImp(con);
+	@Autowired
+	private BorrowerDaoImp genDaoBorrower;
+	@Autowired
+	private LibBranchDaoImp genDaoLibBranch;
 	private GenericDao<Book> genDaoBook = new BookDaoImp(con);
-	private GenericDao<Author> genDaoAuthor = new AuthorDaoImp(con);
+	@Autowired
+	private AuthorDaoImp genDaoAuthor;
 	private BookLoansDao bookLoansDao = new BookLoansDaoImp(con);
 	private BookCopiesDao bookCopiesDao = new BookCopiesDaoImp(con);
 	
@@ -47,7 +51,7 @@ public class BorrowerService {
 		boolean flag;
 		Borrower bor = null;
 		try {
-			bor = genDaoBorrower.get(cardNo);
+			bor = genDaoBorrower.findById(cardNo).get();
 			con.commit();
 		} catch (SQLException e) {
 			System.err.println("Problem with checking card number!");
@@ -65,7 +69,7 @@ public class BorrowerService {
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
 		try {
-			libBranches = genDaoLibBranch.getAll();
+			libBranches = genDaoLibBranch.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			System.out.println("Get All Branches Failed! :(");
@@ -98,7 +102,7 @@ public class BorrowerService {
 				if(bc.getBranchId()==branchId && bc.getNoOfCopies()>=1) {
 					//kind of like doing joins
 					book = genDaoBook.get(bc.getBookId());
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = genDaoAuthor.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
 					list.add(obj);
@@ -144,7 +148,7 @@ public class BorrowerService {
 			list = new ArrayList<>();
 			
 			for(BookLoans bl : bookLoans) {
-				libBranch = genDaoLibBranch.get(bl.getBranchId());
+				libBranch = genDaoLibBranch.findById(bl.getBranchId()).get();
 				
 				if(bl.getCardNo()==cardNo && bl.getDateOut()!=null && bl.getDueDate()!=null) {
 					obj = new BkLoansBranchDTO(bl, libBranch);
@@ -180,7 +184,7 @@ public class BorrowerService {
 			for(BookLoans bl : bookLoans) {
 				if(bl.getCardNo()==cardNo && bl.getBranchId()==branchId) {
 					book = genDaoBook.get(bl.getBookId());
-					author = genDaoAuthor.get(book.getAuthorId());
+					author = genDaoAuthor.findById(book.getAuthorId()).get();
 					obj = new BkLoansBkAuthDTO(bl, book, author);
 					list.add(obj);
 				}
