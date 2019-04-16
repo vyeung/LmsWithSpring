@@ -10,13 +10,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.st.lms.dao.GenericDao;
-import com.st.lms.daoImp.AuthorDaoImp;
-import com.st.lms.daoImp.BookDaoImp;
-import com.st.lms.daoImp.BookLoansDaoImp;
-import com.st.lms.daoImp.BorrowerDaoImp;
-import com.st.lms.daoImp.LibBranchDaoImp;
-import com.st.lms.daoImp.PublisherDaoImp;
+import com.st.lms.dao.AuthorDao;
+import com.st.lms.dao.BookDao;
+import com.st.lms.dao.BookLoansDao;
+import com.st.lms.dao.BorrowerDao;
+import com.st.lms.dao.LibBranchDao;
+import com.st.lms.dao.PublisherDao;
 import com.st.lms.dto.BkAuthPubDTO;
 import com.st.lms.models.Author;
 import com.st.lms.models.Book;
@@ -33,17 +32,17 @@ public class AdminService {
 	
 	
 	@Autowired
-	private BookDaoImp bookDao;
+	private BookDao bookDao;
 	@Autowired
-	private PublisherDaoImp publisherDao;
+	private PublisherDao publisherDao;
 	@Autowired
-	private BookLoansDaoImp bookLoansDao;
+	private BookLoansDao bookLoansDao;
 	@Autowired
-	private AuthorDaoImp authorDao;
+	private AuthorDao authorDao;
 	@Autowired
-	private BorrowerDaoImp borrowerDao;
+	private BorrowerDao borrowerDao;
 	@Autowired
-	private LibBranchDaoImp libraryBranchDao;
+	private LibBranchDao libraryBranchDao;
 
 
 	

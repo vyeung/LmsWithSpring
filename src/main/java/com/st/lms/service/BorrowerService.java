@@ -11,13 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.st.lms.dao.GenericDao;
-import com.st.lms.daoImp.AuthorDaoImp;
-import com.st.lms.daoImp.BookCopiesDaoImp;
-import com.st.lms.daoImp.BookDaoImp;
-import com.st.lms.daoImp.BookLoansDaoImp;
-import com.st.lms.daoImp.BorrowerDaoImp;
-import com.st.lms.daoImp.LibBranchDaoImp;
+import com.st.lms.dao.AuthorDao;
+import com.st.lms.dao.BookCopiesDao;
+import com.st.lms.dao.BookDao;
+import com.st.lms.dao.BookLoansDao;
+import com.st.lms.dao.BorrowerDao;
+import com.st.lms.dao.LibBranchDao;
 import com.st.lms.dto.BkCopiesDTO;
 import com.st.lms.dto.BkLoansBkAuthDTO;
 import com.st.lms.dto.BkLoansBranchDTO;
@@ -38,17 +37,17 @@ public class BorrowerService {
 	private Connection con = ConnectionFactory.getMyConnection();
 	
 	@Autowired
-	private BookDaoImp bookDao;
+	private BookDao bookDao;
 	@Autowired
-	private BookLoansDaoImp bookLoansDao;
+	private BookLoansDao bookLoansDao;
 	@Autowired
-	private BookCopiesDaoImp bookCopiesDao;
+	private BookCopiesDao bookCopiesDao;
 	@Autowired
-	private BorrowerDaoImp borrowerDao;
+	private BorrowerDao borrowerDao;
 	@Autowired
-	private LibBranchDaoImp libBranchDao;
+	private LibBranchDao libBranchDao;
 	@Autowired
-	private AuthorDaoImp authorDao;
+	private AuthorDao authorDao;
 	
 	
 	public boolean borCardNoExists(int cardNo) {

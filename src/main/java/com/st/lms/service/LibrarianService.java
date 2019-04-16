@@ -8,11 +8,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.st.lms.dao.GenericDao;
-import com.st.lms.daoImp.AuthorDaoImp;
-import com.st.lms.daoImp.BookCopiesDaoImp;
-import com.st.lms.daoImp.BookDaoImp;
-import com.st.lms.daoImp.LibBranchDaoImp;
+import com.st.lms.dao.AuthorDao;
+import com.st.lms.dao.BookCopiesDao;
+import com.st.lms.dao.BookDao;
+import com.st.lms.dao.LibBranchDao;
 import com.st.lms.dto.BkCopiesDTO;
 import com.st.lms.models.Author;
 import com.st.lms.models.Book;
@@ -26,19 +25,19 @@ public class LibrarianService {
 	private Connection con = ConnectionFactory.getMyConnection();
 	
 	@Autowired
-	private LibBranchDaoImp genDaoLibBranch;
+	private LibBranchDao libBranchDao;
 	@Autowired
-	private AuthorDaoImp genDaoAuthor;
+	private AuthorDao authorDao;
 	@Autowired
-	private BookDaoImp bookDao;
+	private BookDao bookDao;
 	@Autowired
-	private BookCopiesDaoImp bookCopiesDao;
+	private BookCopiesDao bookCopiesDao;
 	
 	
 	public List<LibraryBranch> getAllBranches() {
 		List<LibraryBranch> libBranches = null;
 		try {
-			libBranches = genDaoLibBranch.findAll();
+			libBranches = libBranchDao.findAll();
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -47,13 +46,13 @@ public class LibrarianService {
 	}
 	
 	public LibraryBranch getLibraryBranch(int branchId) {
-		return genDaoLibBranch.findById(branchId).get();
+		return libBranchDao.findById(branchId).get();
 	}
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
 		LibraryBranch libBranch = new LibraryBranch(branchId, branchName, branchAddr);
 		try {
-			genDaoLibBranch.save(libBranch);
+			libBranchDao.save(libBranch);
 			con.commit();
 		} catch (SQLException e) {
 			myRollBack();
@@ -75,7 +74,7 @@ public class LibrarianService {
 				if(bc.getBranchId() == branchId) {
 					//kind of like doing joins
 					book = bookDao.findById(bc.getBookId()).get();
-					author = genDaoAuthor.findById(book.getAuthorId()).get();
+					author = authorDao.findById(book.getAuthorId()).get();
 					
 					obj = new BkCopiesDTO(bc, book, author);
 					list.add(obj);
