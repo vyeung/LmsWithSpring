@@ -2,28 +2,54 @@ package com.st.lms.models;
 
 import java.sql.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@IdClass(BookLoansPrimaryKey.class)
+@Entity
+@Table(name = "tbl_book_loans")
 public class BookLoans {
-	private int bookId;
-	private int branchId;
-	private int cardNo;
+	
+	@Id
+	@Column(name = "bookId")
+	private Integer bookId;
+	
+	@Id
+	@Column(name = "branchId")
+	private Integer branchId;
+	
+	@Id
+	@Column(name = "cardNo")
+	private Integer cardNo;
+	
+	@Column(name = "dateOut")
 	private Date dateOut;
+	
+	@Column(name = "dueDate")
 	private Date dueDate;
+	
 	
 	public BookLoans() {}
 	
-	public BookLoans(int bookId, int branchId, int cardNo, Date dateOut, Date dueDate) {
+	public BookLoans(Integer bookId, Integer branchId, Integer cardNo, Date dateOut, Date dueDate) {
 		this.bookId = bookId;
 		this.branchId = branchId;
 		this.cardNo = cardNo;
 		this.dateOut = dateOut;
 		this.dueDate = dueDate;
 	}
-
+	
 	public int getBookId() {
 		return bookId;
 	}
 
-	public void setBookId(int bookId) {
+	public void setBookId(Integer bookId) {
 		this.bookId = bookId;
 	}
 
@@ -31,7 +57,7 @@ public class BookLoans {
 		return branchId;
 	}
 
-	public void setBranchId(int branchId) {
+	public void setBranchId(Integer branchId) {
 		this.branchId = branchId;
 	}
 
@@ -39,7 +65,7 @@ public class BookLoans {
 		return cardNo;
 	}
 
-	public void setCardNo(int cardNo) {
+	public void setCardNo(Integer cardNo) {
 		this.cardNo = cardNo;
 	}
 
