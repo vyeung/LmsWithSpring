@@ -8,6 +8,8 @@ public class BookLoansPrimaryKey implements Serializable {
 	private Integer branchId;
 	private Integer cardNo;
 	
+	public BookLoansPrimaryKey() {}
+	
 	public BookLoansPrimaryKey(Integer bookId, Integer branchId, Integer cardNo) {
 		this.bookId = bookId;
 		this.branchId = branchId;
