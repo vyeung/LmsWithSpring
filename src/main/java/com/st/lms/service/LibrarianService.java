@@ -2,6 +2,7 @@ package com.st.lms.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,8 +35,16 @@ public class LibrarianService {
 		return libBranches;
 	}
 	
+	public Book getBook(int bookId) {
+		Optional<Book> book;
+		book = bookDao.findById(bookId);
+		return book.isPresent() ? book.get() : null;
+	}
+	
 	public LibraryBranch getLibraryBranch(int branchId) {
-		return libBranchDao.findById(branchId).get();
+		Optional<LibraryBranch> libBranch;
+		libBranch = libBranchDao.findById(branchId);
+		return libBranch.isPresent() ? libBranch.get() : null;
 	}
 	
 	public void updateBranch(int branchId, String branchName, String branchAddr) {

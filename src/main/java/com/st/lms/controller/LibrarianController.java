@@ -32,26 +32,42 @@ public class LibrarianController {
 	public ResponseEntity<LibraryBranch> getLibraryBranch(@PathVariable int branchId) throws NotFoundException{
 		LibraryBranch branch = librarianService.getLibraryBranch(branchId);
 		if( branch == null)
-			throw new NotFoundException("Get", "libray branch", branchId);
+			throw new NotFoundException("Get", "library branch", branchId);
 		return new ResponseEntity<LibraryBranch>(branch, HttpStatus.OK);
 	}
 	
 	@PutMapping("/libraries/{branchId}")
 	public ResponseEntity<LibraryBranch> updateLibraryBranch(@PathVariable int branchId, @RequestBody LibraryBranch branch) throws NotFoundException{
 		if( librarianService.getLibraryBranch(branchId) == null)
-			throw new NotFoundException("Update", "libray branch", branchId);
+			throw new NotFoundException("Update", "library branch", branchId);
 		librarianService.updateBranch(branchId, branch.getBranchName(), branch.getBranchAddress());
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@GetMapping("/libraries/{id}/book_copies")
-	public List<BkCopiesDTO> getBookCopies(@PathVariable int id){
-		return librarianService.getBookCopiesBookAndTitle(id);
+	public ResponseEntity<List<BkCopiesDTO>> getBookCopies(@PathVariable int id) throws NotFoundException {
+		List<BkCopiesDTO> list = librarianService.getBookCopiesBookAndTitle(id);
+		if( list.size() == 0) {
+			throw new NotFoundException("Get BookCopies failed. The library branch with id=" + id + " not found");
+		}
+
+		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 	
+	//PutMethod "payload" shouldnt be in URL
 	@PutMapping("/libraries/{branchId}/book_copies/{bookId}/{numCopies}")
 	public ResponseEntity<BkCopiesDTO> updateBookCopies(@PathVariable int branchId,@PathVariable int bookId,@PathVariable int numCopies) throws NotFoundException{
+		List<BkCopiesDTO> list = librarianService.getBookCopiesBookAndTitle(branchId);
+		if( list.size() == 0) {
+			throw new NotFoundException("Update BookCopies failed. Branch with id=" + branchId + " not found");
+		}
+		
+		Book book = librarianService.getBook(bookId);
+		if( book == null) {
+			throw new NotFoundException("Update BookCopies failed. Book with id=" + bookId + " not found");
+		}
+		
 		librarianService.updateNumCopies(bookId, branchId, numCopies);
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
