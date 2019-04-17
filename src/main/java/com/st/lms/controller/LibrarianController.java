@@ -54,9 +54,8 @@ public class LibrarianController {
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 	
-	//PutMethod "payload" shouldnt be in URL
-	@PutMapping("/libraries/{branchId}/book_copies/{bookId}/{numCopies}")
-	public ResponseEntity<BkCopiesDTO> updateBookCopies(@PathVariable int branchId,@PathVariable int bookId,@PathVariable int numCopies) throws NotFoundException{
+	@PutMapping("/libraries/{branchId}/book_copies/{bookId}")
+	public ResponseEntity<BkCopiesDTO> updateBookCopies(@PathVariable int branchId,@PathVariable int bookId, @RequestBody BookCopies bkCopy) throws NotFoundException{
 		List<BkCopiesDTO> list = librarianService.getBookCopiesBookAndTitle(branchId);
 		if( list.size() == 0) {
 			throw new NotFoundException("Update BookCopies failed. Branch with id=" + branchId + " not found");
@@ -67,7 +66,7 @@ public class LibrarianController {
 			throw new NotFoundException("Update BookCopies failed. Book with id=" + bookId + " not found");
 		}
 		
-		librarianService.updateNumCopies(bookId, branchId, numCopies);
+		librarianService.updateNumCopies(bookId, branchId, bkCopy.getNoOfCopies());
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
