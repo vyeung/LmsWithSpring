@@ -25,7 +25,7 @@ public class BorrowerController {
 	//return list of branches where the borrower has borrowed books from
 	@GetMapping("/cardNo/{cardNo}/libraries")
 	public List<BkLoansBranchDTO> getAllBranches(@PathVariable int cardNo) throws NotFoundException{
-		if(!borrowerService.borCardNoExists(cardNo)) {
+		if(!borrowerService.cardNoExists(cardNo)) {
 			throw new NotFoundException("Login", "borrower", cardNo);
 		}
 		return borrowerService.getBranchesWithBkLoans(cardNo);
@@ -33,7 +33,7 @@ public class BorrowerController {
 	
 	@GetMapping("/cardNo/{cardNo}/libraries/{branchId}/books")
 	public List<BkLoansBkAuthDTO> getAllLoans(@PathVariable int cardNo, @PathVariable int branchId) throws NotFoundException{
-		if(!borrowerService.borCardNoExists(cardNo)) {
+		if(!borrowerService.cardNoExists(cardNo)) {
 			throw new NotFoundException("Login", "borrower", cardNo);
 		}
 		else if(!borrowerService.branchExists(branchId)) {
@@ -45,7 +45,7 @@ public class BorrowerController {
 	//borrow a book
 	@PutMapping("/cardNo/{cardNo}/libraries/{branchId}/books/{bookId}")
 	public ResponseEntity<BookLoans> borrowBook(@PathVariable int cardNo, @PathVariable int branchId, @PathVariable int bookId) throws NotFoundException, BadRequestException{
-		if(!borrowerService.borCardNoExists(cardNo)) {
+		if(!borrowerService.cardNoExists(cardNo)) {
 			throw new NotFoundException("Login", "borrower", cardNo);
 		}
 		else if(!borrowerService.branchExists(branchId)) {
@@ -67,7 +67,7 @@ public class BorrowerController {
 	//return a book
 	@DeleteMapping("/cardNo/{cardNo}/libraries/{branchId}/books/{bookId}")
 	public ResponseEntity<BookLoans> returnBook(@PathVariable int cardNo, @PathVariable int branchId, @PathVariable int bookId) throws NotFoundException, BadRequestException{
-		if(!borrowerService.borCardNoExists(cardNo)) {
+		if(!borrowerService.cardNoExists(cardNo)) {
 			throw new NotFoundException("Login", "borrower", cardNo);
 		}
 		else if(!borrowerService.branchExists(branchId)) {

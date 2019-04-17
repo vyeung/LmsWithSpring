@@ -44,17 +44,8 @@ public class BorrowerService {
 	@Autowired
 	private AuthorDao authorDao;
 	
-	public boolean borCardNoExists(int cardNo) {
-		boolean flag;
-		Borrower bor = null;
-		bor = borrowerDao.findById(cardNo).get();
-		
-		if(bor.getName() == null) 
-			flag = false;
-		else 
-			flag = true;
-		
-		return flag;
+	public boolean cardNoExists(int cardNo) {
+		return borrowerDao.findById(cardNo).isPresent();
 	}
 	
 	public List<LibraryBranch> getAllBranches() {
@@ -178,4 +169,6 @@ public class BorrowerService {
 		bookLoansDao.delete(bl);        //delete entry in book loans
 		bookCopiesDao.saveAndFlush(bc); //update noOfCopies with 1 more of that book
 	}
+	
+	
 }
