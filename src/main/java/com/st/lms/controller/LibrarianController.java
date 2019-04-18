@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.st.lms.dto.BkCopiesDTO;
@@ -16,8 +17,8 @@ import com.st.lms.exception.NotFoundException;
 import com.st.lms.models.*;
 import com.st.lms.service.*;
 
-
 @RestController
+@RequestMapping("/librarian")
 public class LibrarianController {
 
 	@Autowired
