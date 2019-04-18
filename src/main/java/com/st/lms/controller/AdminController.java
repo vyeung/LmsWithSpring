@@ -107,50 +107,38 @@ public class AdminController {
 	public ResponseEntity<BkAuthPubDTO> addBook(@RequestBody BkAuthPubDTO bookBody) 
 	throws AlreadyExistsException, BadRequestException {
 		
-		List<Book> books = adminService.getAllBooks();
-		List<Author> authors = adminService.getAllAuthors();
-		List<Publisher> pubs = adminService.getAllPublishers();
-		int titleExists = 0, authorExists = 0, publisherExists = 0;
-		
-		//check if title, author, and publisher names exist in DB
-		for(Book b : books) {
-			if(b.getTitle().equals(bookBody.getBookTitle()))
-				titleExists = 1;
-		}
-		for(Author a : authors) {
-			if(a.getAuthorName().equals(bookBody.getAuthorName()))
-				authorExists = 1;
-		}
-		for(Publisher p : pubs) {
-			if(p.getPublisherName().equals(bookBody.getPublisherName()))
-				publisherExists = 1;
-		}
+		//check if title, author, and publisher name exists in DB
+		boolean titleExists = adminService.bookTitleExists(bookBody.getBookTitle());
+		boolean authorExists = adminService.authNameExists(bookBody.getAuthorName());
+		boolean publisherExists = adminService.pubNameExists(bookBody.getPublisherName());
 		
 		//throw exceptions depending on flag values
-		if(titleExists==1 && authorExists==1) {
+		if(titleExists && authorExists) {
 			throw new AlreadyExistsException(bookBody.getBookTitle() + " by " + bookBody.getAuthorName() + " already exists in the database");
 		}
-		else if(titleExists==0 && authorExists==0) {
+		else if(!titleExists && !authorExists) {
 			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
 		}
-		else if(titleExists==1 && authorExists==0) {
+		else if(titleExists && !authorExists) {
 			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
 		}
-		else if(titleExists==0 && publisherExists==0) {
+		else if(!titleExists && !publisherExists) {
 			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
 		}
-		else if(titleExists==1 && publisherExists==0) {
+		else if(titleExists && !publisherExists) {
 			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
 		}
 		
 		//no exceptions if code gets here.
-		//titleExists=0, authorExists=1, publisherExists=1 is the only safe combination to add a book.
+		//titleExists=False, authorExists=True, publisherExists=True is only safe combination to add a book.
 		//find corresponding author and publisher ids.
 		int authId = 0, pubId = 0;
+		List<Author> authors = adminService.getAllAuthors();
 		for(Author a : authors) {
 			if(bookBody.getAuthorName().equals(a.getAuthorName()))
 				authId = a.getAuthorId();
 		}
+		List<Publisher> pubs = adminService.getAllPublishers();
 		for(Publisher p : pubs) {
 			if(bookBody.getPublisherName().equals(p.getPublisherName()))
 				pubId = p.getPublisherId();
@@ -169,34 +157,25 @@ public class AdminController {
 			throw new NotFoundException("Update failed. Book with id=" + id + " not found");
 		}
 		
-		List<Author> authors = adminService.getAllAuthors();
-		List<Publisher> pubs = adminService.getAllPublishers();
-		int authorExists = 0, publisherExists = 0;
-
-		//check if author or publisher name exists in DB
-		for(Author a : authors) {
-			if(a.getAuthorName().equals(bookBody.getAuthorName()))
-				authorExists = 1;
-		}
-		for(Publisher p : pubs) {
-			if(p.getPublisherName().equals(bookBody.getPublisherName()))
-				publisherExists = 1;
-		}
+		boolean authorExists = adminService.authNameExists(bookBody.getAuthorName());
+		boolean publisherExists = adminService.pubNameExists(bookBody.getPublisherName());
 		
 		//throw exceptions depending on flag values
-		if(authorExists == 0) {
+		if(!authorExists) {
 			throw new BadRequestException("Add author " + bookBody.getAuthorName() + " to the database first");
 		}
-		else if(publisherExists == 0) {
+		else if(!publisherExists) {
 			throw new BadRequestException("Add publisher " + bookBody.getPublisherName() + " to the database first");
 		}
 		
 		//find corresponding author and publisher ids
 		int authId = 0, pubId = 0;
+		List<Author> authors = adminService.getAllAuthors();
 		for(Author a : authors) {
 			if(bookBody.getAuthorName().equals(a.getAuthorName()))
 				authId = a.getAuthorId();
 		}
+		List<Publisher> pubs = adminService.getAllPublishers();
 		for(Publisher p : pubs) {
 			if(bookBody.getPublisherName().equals(p.getPublisherName()))
 				pubId = p.getPublisherId();
