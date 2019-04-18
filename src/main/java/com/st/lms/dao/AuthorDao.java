@@ -9,4 +9,3 @@ import com.st.lms.models.Author;
 public interface AuthorDao extends JpaRepository<Author, Integer>{
 	
 }
-

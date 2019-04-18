@@ -50,6 +50,7 @@ public class LibrarianService {
 	public void updateBranch(int branchId, String branchName, String branchAddr) {
 		LibraryBranch libBranch = new LibraryBranch(branchId, branchName, branchAddr);
 		libBranchDao.save(libBranch);
+		System.out.println("Update Library Branch Success!");
 	}
 	
 	//returns all bookCopies specific to a branch with book and author

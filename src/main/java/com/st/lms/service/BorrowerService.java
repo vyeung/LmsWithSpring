@@ -24,7 +24,6 @@ import com.st.lms.models.BookCopies;
 import com.st.lms.models.BookCopiesPrimaryKey;
 import com.st.lms.models.BookLoans;
 import com.st.lms.models.BookLoansPrimaryKey;
-import com.st.lms.models.Borrower;
 import com.st.lms.models.LibraryBranch;
 import com.st.lms.utils.DateCalculations;
 
@@ -54,15 +53,14 @@ public class BorrowerService {
 		return libBranches;
 	}
 	
-	//to be implemented after hibernate
 	public boolean branchExists(int branchId) {
 		return libBranchDao.findById(branchId).isPresent();
 	}
 	
-	//to be implemented after hibernate
 	public boolean loanExists(int cardNo, int branchId, int bookId) {
 		return bookLoansDao.findById(new BookLoansPrimaryKey(bookId, branchId, cardNo)).isPresent();
 	}
+	
 	//returns all bookCopies>=1 specific to a branch with book and author
 	public List<BkCopiesDTO> getBkCopiesGreater1BookAndTitle(int branchId) {
 		List<BkCopiesDTO> list = null;
@@ -95,7 +93,9 @@ public class BorrowerService {
 		BookCopies bc = new BookCopies(bookId, branchId, noOfCopies-1);
 		bookLoansDao.save(bl);           //add an entry to book_loans
 		bookCopiesDao.saveAndFlush(bc);  //update noOfCopies with 1 less of that book
+		System.out.println("Book checked out!");
 	}
+	
 	/*##############################################################*/
 	
 	//returns the branches that user has a book checked out from based on their cardNo
@@ -146,7 +146,6 @@ public class BorrowerService {
 	
 	public int getNoOfCopies(int bookId, int branchId) {
 		int numOfCopies = 0;
-		
 		BookCopiesPrimaryKey bcpk = new BookCopiesPrimaryKey(bookId, branchId);
 		BookCopies bc = bookCopiesDao.findById(bcpk).get();
 		numOfCopies = bc.getNoOfCopies();
@@ -168,7 +167,6 @@ public class BorrowerService {
 		
 		bookLoansDao.delete(bl);        //delete entry in book loans
 		bookCopiesDao.saveAndFlush(bc); //update noOfCopies with 1 more of that book
+		System.out.println("Book returned!");
 	}
-	
-	
 }

@@ -1,9 +1,5 @@
 package com.st.lms.dto;
 
-import com.st.lms.models.Author;
-import com.st.lms.models.Book;
-import com.st.lms.models.Publisher;
-
 public class BkAuthPubDTO {
 
 	private int bookId;

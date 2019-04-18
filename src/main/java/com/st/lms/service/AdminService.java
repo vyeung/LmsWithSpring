@@ -39,8 +39,7 @@ public class AdminService {
 	private LibBranchDao libraryBranchDao;
 
 	public boolean bookTitleExists(String bookTitle) {
-		List<Book> books = null;
-		books = bookDao.findAll();
+		List<Book> books = bookDao.findAll();
 		
 		for(Book b : books) {
 			if(b.getTitle().equals(bookTitle))
@@ -87,12 +86,10 @@ public class AdminService {
 				author = authorDao.findById(b.getAuthorId()).get();
 				publisher = publisherDao.findById(b.getPubId()).get();
 
-				
 				obj = new BkAuthPubDTO(bookId, b.getTitle(), 
-								       author.getAuthorName(), publisher.getPublisherName());
+						author.getAuthorName(), publisher.getPublisherName());
 			}
 		}
-		
 		return obj;
 	}
 	
@@ -107,15 +104,13 @@ public class AdminService {
 		list = new ArrayList<>();
 		
 		for(Book b : books) {
-
 			author = authorDao.findById(b.getAuthorId()).get();
-			publisher = publisherDao.findById(b.getPubId()).get(); //.get(b.getPubId());
+			publisher = publisherDao.findById(b.getPubId()).get();
 			
 			obj = new BkAuthPubDTO(b.getBookId(), b.getTitle(), 
-								   author.getAuthorName(), publisher.getPublisherName());
+					author.getAuthorName(), publisher.getPublisherName());
 			list.add(obj);
 		}
-		
 		return list;
 	}
 	
@@ -141,8 +136,7 @@ public class AdminService {
 	/*#########################################################################*/
 	
 	public boolean authNameExists(String authName) {
-		List<Author> authors = null;
-		authors = authorDao.findAll();
+		List<Author> authors = authorDao.findAll();
 		
 		for(Author a : authors) {
 			if(a.getAuthorName().equals(authName))
@@ -155,8 +149,7 @@ public class AdminService {
 		return authorDao.findAll();
 	}
 	
-	public Author getAuthor(int id) {
-		
+	public Author getAuthor(int id) {	
 		Optional<Author> author = authorDao.findById(id);
 		if(author.isPresent())
 			return author.get();
@@ -164,15 +157,13 @@ public class AdminService {
 	}
 	
 	public Author addAuthor(Author author) {
-		
 		Optional<Author> existingAuthor = authorDao.findById(author.getAuthorId());
 		if(!existingAuthor.isPresent()) 
 			return authorDao.save(author);
 		return null;
 	}
 	
-	public Author updateAuthor(int id, Author author) {
-		
+	public Author updateAuthor(int id, Author author) {	
 		Optional<Author> existingAuthor = authorDao.findById(id);
 		if(!existingAuthor.isPresent())
 			return null;
@@ -180,7 +171,6 @@ public class AdminService {
 	}
 	
 	public void deleteAuthor(int id) {
-		
 		authorDao.deleteById(id);
 	}
 	
@@ -188,7 +178,6 @@ public class AdminService {
 	
 	public boolean pubNameExists(String pubName) {
 		List<Publisher> pub = publisherDao.findAll();
-		System.err.println("Failure in pubNameExists()");
 		
 		for(Publisher p : pub) {
 			if(p.getPublisherName().equals(pubName))
@@ -267,7 +256,6 @@ public class AdminService {
 	}
 	
 	public LibraryBranch getLibraryBranch(int id) {
-		
 		Optional<LibraryBranch> libraryBranch = libraryBranchDao.findById(id);
 		if(libraryBranch.isPresent())
 			return libraryBranch.get();
@@ -275,7 +263,6 @@ public class AdminService {
 	}
 	
 	public LibraryBranch addLibraryBranch(LibraryBranch libraryBranch) {
-		
 		Optional<LibraryBranch> existingLibraryBranch = libraryBranchDao.findById(libraryBranch.getBranchId());
 		if(!existingLibraryBranch.isPresent()) 
 			return libraryBranchDao.save(libraryBranch);
@@ -283,7 +270,6 @@ public class AdminService {
 	}
 	
 	public LibraryBranch updateLibraryBranch(int id, LibraryBranch libraryBranch) {
-		
 		Optional<LibraryBranch> existingLibraryBranch = libraryBranchDao.findById(id);
 		if(!existingLibraryBranch.isPresent())
 			return null;
@@ -291,7 +277,6 @@ public class AdminService {
 	}
 	
 	public void deleteLibraryBranch(int id) {
-		
 		libraryBranchDao.deleteById(id);
 	}
 	
@@ -313,7 +298,6 @@ public class AdminService {
 	}
 	
 	public Borrower getBorrower(int id) {
-		
 		Optional<Borrower> borrower = borrowerDao.findById(id);
 		if(borrower.isPresent())
 			return borrower.get();
@@ -321,7 +305,6 @@ public class AdminService {
 	}
 	
 	public Borrower addBorrower(Borrower borrower) {
-		
 		Optional<Borrower> existingBorrower = borrowerDao.findById(borrower.getCardNo());
 		if(!existingBorrower.isPresent()) 
 			return borrowerDao.save(borrower);
@@ -329,7 +312,6 @@ public class AdminService {
 	}
 	
 	public Borrower updateBorrower(int id, Borrower borrower) {
-		
 		Optional<Borrower> existingBorrower = borrowerDao.findById(id);
 		if(!existingBorrower.isPresent())
 			return null;
@@ -337,7 +319,6 @@ public class AdminService {
 	}
 	
 	public void deleteBorrower(int id) {
-		
 		borrowerDao.deleteById(id);
 	}
 	
