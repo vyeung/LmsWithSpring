@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.st.lms.dto.BkAuthPubDTO;
@@ -28,6 +29,7 @@ import com.st.lms.service.AdminService;
 import com.st.lms.utils.DateCalculations;
 
 @RestController
+@RequestMapping("/admin")
 public class AdminController {
 	
 	@Autowired
