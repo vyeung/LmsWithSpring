@@ -98,27 +98,44 @@ public class BorrowerService {
 	
 	/*##############################################################*/
 	
+	//returns a list of BkLoansBkAuth DTOs of the given cardNo{
+		public List<BkLoansBkAuthDTO> getBorrowedBooks(int cardNo){
+			List<BkLoansBkAuthDTO> loans = new ArrayList<BkLoansBkAuthDTO>();
+			List<BookLoans> allLoans = bookLoansDao.findAll();
+			Book book;
+			Author author;
+			for (BookLoans loan : allLoans) {
+				if(loan.getCardNo()==cardNo) {
+					book = bookDao.findById(loan.getBookId()).get();
+					author = authorDao.findById(book.getAuthorId()).get();
+					loans.add(new BkLoansBkAuthDTO(loan, book, author));
+				}
+			}
+			return loans;
+		}
+		
 	//returns the branches that user has a book checked out from based on their cardNo
 	public List<BkLoansBranchDTO> getBranchesWithBkLoans(int cardNo) {
-		List<BkLoansBranchDTO> list = null;
+		List<BkLoansBranchDTO> list = new ArrayList<>();
 		List<BookLoans> bookLoans = bookLoansDao.findAll();
 		LibraryBranch libBranch;
 		
 		BkLoansBranchDTO obj;
-		list = new ArrayList<>();
 		
-		for(BookLoans bl : bookLoans) {
-			libBranch = libBranchDao.findById(bl.getBranchId()).get();
-			
-			if(bl.getCardNo()==cardNo && bl.getDateOut()!=null && bl.getDueDate()!=null) {
-				obj = new BkLoansBranchDTO(bl, libBranch);
+		for(int i = 0; i < bookLoans.size(); i++) {
+			if(bookLoans.get(i).getCardNo() == cardNo) {
+				libBranch = libBranchDao.findById(bookLoans.get(i).getBranchId()).get();
+				obj = new BkLoansBranchDTO(libBranch, new ArrayList<BookLoans>());
+				for(int j = i; j < bookLoans.size(); j++) {
+					if(bookLoans.get(j).getBranchId()==libBranch.getBranchId() && bookLoans.get(j).getCardNo()==cardNo) {
+						obj.addBookLoan(bookLoans.get(j));
+						bookLoans.remove(j);
+						j--;
+					}
+				}
 				list.add(obj);
 			}
 		}
-		
-		//remove duplicates based on branch name
-		HashSet<String> seen = new HashSet<>();
-		list.removeIf(e -> !seen.add(e.getLibBranch().getBranchName()));
 		return list;
 	}
 	
