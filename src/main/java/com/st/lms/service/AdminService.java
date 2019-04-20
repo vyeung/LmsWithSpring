@@ -167,6 +167,7 @@ public class AdminService {
 		Optional<Author> existingAuthor = authorDao.findById(id);
 		if(!existingAuthor.isPresent())
 			return null;
+		author.setAuthorId(id);
 		return authorDao.save(author);
 	}
 	
@@ -273,6 +274,7 @@ public class AdminService {
 		Optional<LibraryBranch> existingLibraryBranch = libraryBranchDao.findById(id);
 		if(!existingLibraryBranch.isPresent())
 			return null;
+		libraryBranch.setBranchId(id);
 		return libraryBranchDao.save(libraryBranch);
 	}
 	
@@ -315,6 +317,7 @@ public class AdminService {
 		Optional<Borrower> existingBorrower = borrowerDao.findById(id);
 		if(!existingBorrower.isPresent())
 			return null;
+		borrower.setCardNo(id);
 		return borrowerDao.save(borrower);
 	}
 	
