@@ -29,7 +29,7 @@ import com.st.lms.service.AdminService;
 import com.st.lms.utils.DateCalculations;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/admin") 
 public class AdminController {
 	
 	@Autowired
