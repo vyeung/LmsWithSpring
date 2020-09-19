@@ -1,6 +1,7 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
 application.properties
+LmsSpringNotes.txt
 
 ### STS ###
 .apt_generated
